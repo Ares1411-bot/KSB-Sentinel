@@ -108,6 +108,18 @@
 .expanded-trend-modal .trend-stats { margin:0 0 18px; }
 #expandedTrendChart { width:100%; height:min(48vh,480px); display:block; }
 .trend-chart-caption .secondary-action { font-size:11px; margin-left:auto; }
+.warning-scope-bar { display:block; }
+.warning-pump-context { flex-wrap:wrap; margin-top:14px; }
+.warning-scope-bar .scope-rule-note { margin:12px 0 0; text-align:left; font-size:12px; }
+.warning-scope-bar .scope-rule-note strong { font-size:13px; }
+.warning-pump-context[hidden] { display:none; }
+.warning-scope-bar .scope-switch { width:100%; border:0; border-bottom:1px solid #dce5ef; border-radius:0; padding:0; gap:24px; }
+.warning-scope-bar .scope-switch button { height:42px; border-radius:0; padding:0 8px; font-size:14px; border-bottom:3px solid transparent; }
+.warning-scope-bar .scope-switch button.active { background:transparent; color:var(--primary); border-bottom-color:var(--primary); }
+.warning-condition-label { display:flex; align-items:center; gap:14px; margin:0 0 18px; font-size:14px; color:#526279; }
+.warning-condition-label select { height:36px; padding:0 12px; border:1px solid #d8dfe8; border-radius:5px; background:#fff; color:#526279; }
+#warningConditionGroup[hidden],#warningRuleForm[hidden] { display:none; }
+.rule-inherited-note { display:block; margin-top:6px; color:#8792a3; font-size:12px; }
 @keyframes records-in { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:none; } }
 @media(max-width:1100px) { .field-records { width:min(380px,calc(100vw - 24px)); } }
 @media(max-width:1200px) { .event-modal.with-event-trend .event-columns { grid-template-columns:160px minmax(260px,1fr) 250px; width:710px; } .event-modal.with-event-trend .event-detail-body { overflow-x:auto; } .event-trend-drawer { flex-basis:340px; } }

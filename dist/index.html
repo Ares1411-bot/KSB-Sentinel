@@ -1862,15 +1862,15 @@
           </section>
           <section class="management-tab" id="alertsTab">
             <div class="content-heading">
-              <div><h2>PLC 预警配置</h2><p>全平台统一规则；各等级颜色同步用于实时数据与趋势回溯。</p></div>
+              <div><h2>PLC 预警配置</h2><p>平台默认与设备自定义规则；各等级颜色同步用于实时数据与趋势回溯。</p></div>
               <span class="template-source-note">未配置字段不产生预警</span>
             </div>
-            <div class="warning-scope-bar" hidden style="display:none">
-              <div class="scope-switch" id="warningScopeSwitch" aria-label="预警配置范围"><button class="active" data-warning-scope="default" type="button">平台默认</button><button data-warning-scope="pump" type="button">泵机自定义</button></div>
-              <div class="warning-pump-context disabled" id="warningPumpContext">
-                <select id="alertProjectSelect" aria-label="选择项目"></select><span>/</span><select id="alertPlantSelect" aria-label="选择厂房"></select><span>/</span><select id="alertPumpSelect" aria-label="选择泵机"></select>
+            <div class="warning-scope-bar">
+              <div class="scope-switch" id="warningScopeSwitch" role="tablist" aria-label="预警配置范围"><button class="active" data-warning-scope="default" role="tab" aria-selected="true" type="button">平台默认规则</button><button data-warning-scope="pump" role="tab" aria-selected="false" type="button">自定义规则</button></div>
+              <div class="warning-pump-context disabled" id="warningPumpContext" hidden>
+                <select id="alertProjectSelect" aria-label="选择项目"></select><span>/</span><select id="alertPlantSelect" aria-label="选择厂房"></select><span>/</span><select id="alertUnitSelect" aria-label="选择机组"></select><span>/</span><select id="alertPumpSelect" aria-label="选择设备"></select>
               </div>
-              <div class="scope-rule-note" id="warningScopeNote"><strong>正在维护平台默认规则</strong>泵机未配置自定义规则时自动继承</div>
+              <div class="scope-rule-note" id="warningScopeNote"><strong>正在维护平台默认规则</strong>数值字段未配置自定义规则时沿用默认；布尔异常值仅在设备中配置。</div>
             </div>
             <div class="warning-stat-strip"><div class="warning-stat"><span>标准字段</span><strong id="warningFieldTotal">0</strong></div><div class="warning-stat"><span>已配置规则</span><strong id="warningConfiguredTotal">0</strong></div><div class="warning-stat"><span>未配置字段</span><strong id="warningUnconfiguredTotal">0</strong></div></div>
             <div class="filter-bar"><input id="warningFieldSearch" type="search" placeholder="搜索字段名称或编码"><select id="warningTypeFilter"><option value="all">全部数据类型</option><option value="number">数值型</option><option value="boolean">布尔型</option></select><select id="warningStatusFilter"><option value="all">全部配置状态</option><option value="unconfigured">未配置</option><option value="enabled">已启用</option><option value="disabled">已停用</option></select><span class="table-count" id="warningRuleCount"></span></div>
@@ -1928,13 +1928,13 @@
         <header class="modal-header"><div><h2 id="warningRuleModalTitle">配置预警规则</h2><p>每个等级最多配置一次；同时满足多个等级时，只触发最高等级。</p></div><button class="modal-close" data-close-modal="warningRuleModal" type="button">×</button></header>
         <div class="modal-body scroll-body">
           <div class="warning-field-summary"><div><strong id="warningRuleFieldName">—</strong><span id="warningRuleFieldMeta">—</span></div><div class="warning-scope-copy"><strong id="warningRuleScopeName">—</strong><span id="warningRuleScopePath">—</span></div></div>
-          <label class="inherit-rule-option hidden" id="inheritRuleOption"><input id="inheritDefaultRule" type="checkbox"><span><strong>继承平台默认规则</strong><small id="inheritRuleDescription">当前泵机不单独保存该字段规则。</small></span></label>
+          <label class="inherit-rule-option hidden" id="inheritRuleOption"><input id="inheritDefaultRule" type="checkbox"><span><strong>使用平台默认规则</strong><small id="inheritRuleDescription">取消勾选后，为当前设备单独配置该字段规则。</small></span></label>
           <div class="warning-rule-form" id="warningRuleForm">
             <p class="rule-section-note" id="warningRuleHint">配置后仅在规则启用时参与实时预警判断。</p>
-            <div class="data-table-wrap"><table class="data-table level-table"><thead><tr><th>预警等级</th><th>预警条件</th><th>下限 / 异常值</th><th>上限</th><th>颜色</th><th>操作</th></tr></thead><tbody id="warningLevelRows"></tbody></table></div>
+            <label class="warning-condition-label" id="warningConditionGroup"><span>预警条件（所有等级共用）</span><select id="warningConditionInput"><option value="range">超出正常范围</option><option value="max">高于上限</option><option value="min">低于下限</option></select></label>
+            <div class="data-table-wrap"><table class="data-table level-table"><thead><tr><th>预警等级</th><th id="warningLowerTitle">下限 / 异常值</th><th>上限</th><th>颜色</th><th>操作</th></tr></thead><tbody id="warningLevelRows"></tbody></table></div>
             <button class="secondary-action" id="addWarningLevel" type="button">＋ 新增等级</button>
             <div class="rule-input-grid">
-              <label><span>持续时间（秒）</span><input id="warningDurationInput" type="number" min="0" step="1" value="30"></label>
               <label><span>规则状态</span><select id="warningEnabledInput"><option value="enabled">启用</option><option value="disabled">停用</option></select></label>
             </div>
           </div>
@@ -2004,27 +2004,27 @@
 
       // 全平台按标准字段维护多等级预警规则。
       const thresholdRules = {
-        running_status: { abnormalValue:'停止', duration:60, recovery:30, severity:'重要', enabled:true },
-        inlet_pressure: { min:0.18, max:0.28, duration:30, recovery:30, severity:'重要', enabled:true },
-        outlet_pressure: { min:2.10, max:2.80, duration:30, recovery:30, severity:'重要', enabled:true },
-        running_frequency: { min:20, max:50, duration:60, recovery:30, severity:'一般', enabled:true },
-        current_ab: { max:10.5, duration:20, recovery:30, severity:'重要', enabled:true },
-        current_bc: { max:10.5, duration:20, recovery:30, severity:'重要', enabled:true },
-        current_ca: { max:10.5, duration:20, recovery:30, severity:'重要', enabled:true },
-        voltage_a: { min:360, max:400, duration:30, recovery:30, severity:'重要', enabled:true },
-        active_power: { max:120, duration:60, recovery:60, severity:'一般', enabled:true }
+        inlet_pressure: { min:0.18, max:0.28, severity:'重要', enabled:true },
+        outlet_pressure: { min:2.10, max:2.80, severity:'重要', enabled:true },
+        running_frequency: { min:20, max:50, severity:'一般', enabled:true },
+        current_ab: { max:10.5, severity:'重要', enabled:true },
+        current_bc: { max:10.5, severity:'重要', enabled:true },
+        current_ca: { max:10.5, severity:'重要', enabled:true },
+        voltage_a: { min:360, max:400, severity:'重要', enabled:true },
+        active_power: { max:120, severity:'一般', enabled:true }
       };
       const severityNames=['提示','一般','重要','严重'];
       const severityColors=['#2784d5','#c79a00','#ed7a25','#d94444'];
-      Object.values(thresholdRules).forEach(rule=>{rule.levels=[{...rule,color:severityColors[severityNames.indexOf(rule.severity)]}];delete rule.recovery;});
-      thresholdRules.inlet_pressure={duration:30,enabled:true,levels:[
+      Object.values(thresholdRules).forEach(rule=>{delete rule.duration;rule.levels=[{...rule,color:severityColors[severityNames.indexOf(rule.severity)]}];delete rule.recovery;delete rule.levels[0].recovery;});
+      delete thresholdRules.running_status;
+      thresholdRules.inlet_pressure={enabled:true,condition:'range',levels:[
         {severity:'提示',min:.18,max:.28,color:severityColors[0]},
         {severity:'一般',min:.16,max:.30,color:severityColors[1]},
         {severity:'重要',min:.14,max:.32,color:severityColors[2]},
         {severity:'严重',min:.12,max:.34,color:severityColors[3]}
       ]};
       const pumpThresholdRules={};
-      let warningLevelDraft=[];
+      let warningLevelDraft=[],warningConditionDraft='range';
       const thresholdAlertHistory = {
         inlet_pressure: [
           { hoursAgo: .45, value: .31, duration: '12 分钟' },
@@ -2085,6 +2085,8 @@
           normalizeDevicePoint(templates[1].points[5], 'power', 118.1, '能耗参数')
         ]}
       ];
+      // 来自 PLC 返回值元数据的演示枚举；真实接入后由接口提供。
+      baseDevices[0].points[0].returnedValues=['运行','停止'];
 
       const baseCardConfig = {
         columns: 4,
@@ -2145,6 +2147,8 @@
         'pump-pressure-1': createPumpState('pressure1','1# 增压泵',2,8),
         'pump-pressure-2': { devices:[], cardConfig:{ columns:3, groups:[], items:[] } }
       };
+      pumpStates['pump-omega-2'].devices[0].points[0].returnedValues=['1','0'];
+      pumpStates['pump-omega-2'].devices[0].points[0].value='1';
       let currentProjectId = 'project-demo';
       let currentPlantId = 'plant-water';
       let currentUnitId = 'unit-water-main';
@@ -2185,7 +2189,7 @@
       };
 
       const effectiveThresholdRule = code => {
-        const field=standardFields.find(item=>item.code===code),rule=thresholdRules[code]||null;
+        const field=standardFields.find(item=>item.code===code),rule=pumpThresholdRules[currentPumpId]?.[code]||thresholdRules[code]||null;
         return field?.enabled===false||rule?.enabled===false?null:rule;
       };
       const thresholdRuleFor=source=>effectiveThresholdRule(source?.metric?.standardCode);
@@ -2373,7 +2377,8 @@
         $('#pumpSelect').innerHTML = context.unit.pumps.map(item => `<option value="${item.id}" ${item.id === context.pump.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
         $('#alertProjectSelect').innerHTML = hierarchy.map(item => `<option value="${item.id}" ${item.id === context.project.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
         $('#alertPlantSelect').innerHTML = context.project.plants.map(item => `<option value="${item.id}" ${item.id === context.plant.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
-        $('#alertPumpSelect').innerHTML = context.plant.units.flatMap(item => item.pumps).map(item => `<option value="${item.id}" ${item.id === context.pump.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
+        $('#alertUnitSelect').innerHTML = context.plant.units.map(item => `<option value="${item.id}" ${item.id === context.unit.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
+        $('#alertPumpSelect').innerHTML = context.unit.pumps.map(item => `<option value="${item.id}" ${item.id === context.pump.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
         $('#currentPumpSummary').textContent = `${devices.length} 台 PLC · ${cardConfig.items.length} 个卡片参数`;
         $('#deviceBindingContext').textContent = context.text;
         $('#editorContextPath').textContent = context.text;
@@ -2420,7 +2425,7 @@
         renderDeviceTable();
         renderPanel();
         renderWarningRules();
-        if (alertScopeMode === 'pump') $('#warningScopeNote').innerHTML = `<strong>正在维护 ${esc(currentContext().pump.name)}</strong>可继承默认规则或保存泵机自定义规则`;
+        if (alertScopeMode === 'pump') updateWarningScopeNote();
         setPumpTreeOpen(false);
         if (announce) toast(`已切换至 ${currentContext().pump.name}`);
       };
@@ -2476,28 +2481,35 @@
         $('#fieldCount').textContent = `共 ${filtered.length} 个字段`;
       };
       const warningFieldKind = field => field.type === 'BOOLEAN' ? 'boolean' : field.type === 'STRING' ? 'text' : 'number';
+      const configuredRule=code=>alertScopeMode==='default'?thresholdRules[code]:pumpThresholdRules[currentPumpId]?.[code];
+      const displayedRule=code=>configuredRule(code)||(alertScopeMode==='pump'?thresholdRules[code]:null);
+      const plcReturnedValues=code=>[...new Set(devices.flatMap(device=>device.points.filter(point=>point.standardCode===code).flatMap(point=>point.returnedValues||[])).map(String))];
+      const updateWarningScopeNote=()=>{
+        $('#warningScopeNote').innerHTML=alertScopeMode==='default'?'<strong>正在维护平台默认规则</strong>数值字段未配置自定义规则时沿用默认；布尔异常值仅在设备中配置。':'<strong>'+esc(currentContext().text)+'</strong>自定义仅用于此设备；未配置的数值字段沿用平台默认规则。';
+      };
       const renderWarningRules=()=>{
         const fields=standardFields.filter(field=>warningFieldKind(field)!=='text');
         const query=$('#warningFieldSearch').value.trim().toLowerCase();
         const filtered=fields.filter(field=>{
-          const rule=thresholdRules[field.code],status=!rule?'unconfigured':rule.enabled!==false&&field.enabled!==false?'enabled':'disabled';
+          const rule=displayedRule(field.code),status=!rule?'unconfigured':rule.enabled!==false&&field.enabled!==false?'enabled':'disabled';
           return (field.name+field.code+field.category).toLowerCase().includes(query)&&($('#warningTypeFilter').value==='all'||$('#warningTypeFilter').value===warningFieldKind(field))&&($('#warningStatusFilter').value==='all'||$('#warningStatusFilter').value===status);
         });
         $('#warningRuleTableBody').innerHTML=filtered.map(field=>{
-          const rule=thresholdRules[field.code],enabled=rule?.enabled!==false&&field.enabled!==false;
-          const copy=rule?'<div class="rule-summary" tabindex="0" data-rule-tooltip="'+esc(field.code)+'" aria-describedby="warningRuleTooltip">'+rule.levels.slice(0,4).map(level=>'<span class="rule-level-tag"><span style="color:'+level.color+'">●</span> '+esc(level.severity)+'</span>').join('')+'</div>':'尚未配置';
-          return '<tr class="warning-rule-row" data-warning-field="'+esc(field.code)+'" tabindex="0"><td><strong>'+esc(field.name)+'</strong><small>'+esc(field.code)+'</small></td><td>'+(warningFieldKind(field)==='number'?'数值型':'布尔型')+' / '+esc(field.unit||'-')+'</td><td>'+esc(field.category)+'</td><td>'+copy+'</td><td>'+(!rule?'未配置':enabled?'已启用':field.enabled===false?'字段已停用':'已停用')+'</td><td><div class="table-actions"><button type="button">配置</button><button type="button" data-toggle-warning="'+esc(field.code)+'" '+(!rule||field.enabled===false?'disabled':'')+'>'+(enabled?'停用':'启用')+'</button></div></td></tr>';
+          const rule=displayedRule(field.code),enabled=rule?.enabled!==false&&field.enabled!==false,booleanDefault=alertScopeMode==='default'&&warningFieldKind(field)==='boolean';
+          const inherited=alertScopeMode==='pump'&&!configuredRule(field.code)&&Boolean(rule);
+          const copy=booleanDefault?'异常值仅在设备自定义规则中配置':rule?'<div class="rule-summary" tabindex="0" data-rule-tooltip="'+esc(field.code)+'" aria-describedby="warningRuleTooltip">'+rule.levels.slice(0,4).map(level=>'<span class="rule-level-tag"><span style="color:'+level.color+'">●</span> '+esc(level.severity)+'</span>').join('')+'</div>'+(inherited?'<small class="rule-inherited-note">使用平台默认规则</small>':''):'尚未配置';
+          return '<tr class="warning-rule-row" data-warning-field="'+esc(field.code)+'" tabindex="0"><td><strong>'+esc(field.name)+'</strong><small>'+esc(field.code)+'</small></td><td>'+(warningFieldKind(field)==='number'?'数值型':'布尔型')+' / '+esc(field.unit||'-')+'</td><td>'+esc(field.category)+'</td><td>'+copy+'</td><td>'+(booleanDefault?'仅设备配置':!rule?'未配置':enabled?'已启用':field.enabled===false?'字段已停用':'已停用')+'</td><td><div class="table-actions"><button type="button" '+(booleanDefault?'disabled':'')+'>配置</button><button type="button" data-toggle-warning="'+esc(field.code)+'" '+(!rule||field.enabled===false||booleanDefault?'disabled':'')+'>'+(enabled?'停用':'启用')+'</button></div></td></tr>';
         }).join('')||'<tr><td colspan="6">未找到匹配的字段</td></tr>';
-        const configured=fields.filter(field=>thresholdRules[field.code]).length;
+        const configured=fields.filter(field=>displayedRule(field.code)).length;
         $('#warningFieldTotal').textContent=fields.length;$('#warningConfiguredTotal').textContent=configured;
         $('#warningUnconfiguredTotal').textContent=fields.length-configured;$('#warningRuleCount').textContent='共 '+filtered.length+' 个字段';
       };
       const hideRuleTooltip=()=>{const bubble=$('#warningRuleTooltip');bubble.classList.remove('open');bubble.setAttribute('aria-hidden','true');};
       const showRuleTooltip=(trigger,x,y)=>{
-        const field=standardFields.find(field=>field.code===trigger.dataset.ruleTooltip),rule=thresholdRules[field?.code];
+        const field=standardFields.find(field=>field.code===trigger.dataset.ruleTooltip),rule=displayedRule(field?.code);
         if(!rule)return hideRuleTooltip();
         const bubble=$('#warningRuleTooltip'),unit=field.unit&&field.unit!=='-'?' '+field.unit:'';
-        bubble.innerHTML='<h4>'+esc(field.name)+' · 预警规则</h4>'+rule.levels.map(level=>'<div class="rule-hover-line"><strong style="color:'+level.color+'">● '+esc(level.severity)+'</strong><span>'+esc(levelText(level)+(level.abnormalValue!=null?'':unit))+'</span></div>').join('')+'<div class="rule-hover-foot">持续 '+rule.duration+' 秒后触发；同时满足时取最高等级。<br>等于数值上下限视为正常。</div>';
+        bubble.innerHTML='<h4>'+esc(field.name)+' · 预警规则</h4>'+rule.levels.map(level=>'<div class="rule-hover-line"><strong style="color:'+level.color+'">● '+esc(level.severity)+'</strong><span>'+esc(levelText(level)+(level.abnormalValue!=null?'':unit))+'</span></div>').join('')+'<div class="rule-hover-foot">同时满足时取最高等级。<br>等于数值上下限视为正常。</div>';
         bubble.classList.add('open');bubble.setAttribute('aria-hidden','false');
         const bounds=bubble.getBoundingClientRect(),width=window.innerWidth,height=window.innerHeight;
         bubble.style.left=Math.max(12,Math.min(x+16,width-bounds.width-12))+'px';
@@ -2513,23 +2525,34 @@
       window.addEventListener('resize',hideRuleTooltip);
       const renderWarningLevels=()=>{
         const field=standardFields.find(field=>field.code===editingWarningFieldCode),boolean=warningFieldKind(field)==='boolean';
+        const returned=plcReturnedValues(field.code);
+        $('#warningLowerTitle').textContent=boolean?'异常值':'下限';
+        $('#warningConditionGroup').hidden=boolean;
         $('#warningLevelRows').innerHTML=warningLevelDraft.map((level,index)=>{
           const select='<select data-level-prop="severity">'+severityNames.map(name=>'<option '+(name===level.severity?'selected':'')+'>'+name+'</option>').join('')+'</select>';
-          const condition=boolean?'等于异常值':'<select data-level-prop="condition">'+[['range','超出正常范围'],['max','高于上限'],['min','低于下限']].map(([value,name])=>'<option value="'+value+'" '+(level.condition===value?'selected':'')+'>'+name+'</option>').join('')+'</select>';
           const input=(prop,type='number')=>'<input type="'+type+'" step="any" aria-label="'+esc(level.severity)+' '+({min:'下限',max:'上限',abnormalValue:'异常值',color:'展示颜色'}[prop]||prop)+'" data-level-prop="'+prop+'" value="'+esc(level[prop]??'')+'" '+(prop==='abnormalValue'?'placeholder="填写实际异常值"':'')+'>';
-          return '<tr data-level-index="'+index+'"><td>'+select+'</td><td>'+condition+'</td><td>'+(boolean?input('abnormalValue','text'):level.condition!=='max'?input('min'):'—')+'</td><td>'+(!boolean&&level.condition!=='min'?input('max'):'—')+'</td><td>'+input('color','color')+'</td><td><div class="table-actions"><button class="danger-link" type="button" data-remove-level="'+index+'">删除</button></div></td></tr>';
+          const abnormal='<select data-level-prop="abnormalValue" aria-label="'+esc(level.severity)+'异常值" '+(!returned.length?'disabled':'')+'><option value="">'+(returned.length?'选择 PLC 返回值':'暂无 PLC 返回值')+'</option>'+returned.map(value=>'<option value="'+esc(value)+'" '+(String(level.abnormalValue??'')===value?'selected':'')+'>'+esc(value)+'</option>').join('')+'</select>';
+          return '<tr data-level-index="'+index+'"><td>'+select+'</td><td>'+(boolean?abnormal:warningConditionDraft!=='max'?input('min'):'—')+'</td><td>'+(!boolean&&warningConditionDraft!=='min'?input('max'):'—')+'</td><td>'+input('color','color')+'</td><td><div class="table-actions"><button class="danger-link" type="button" data-remove-level="'+index+'">删除</button></div></td></tr>';
         }).join('');$('#addWarningLevel').disabled=warningLevelDraft.length>=4;
+        $('#addWarningLevel').textContent=warningLevelDraft.length>=4?'已配置全部四个等级':'＋ 新增等级';
       };
       const updateWarningConditionFields=()=>{};
-      const updateWarningInheritance=()=>{};
+      const updateWarningInheritance=()=>{const inherited=alertScopeMode==='pump'&&$('#inheritDefaultRule').checked;$('#warningRuleForm').hidden=inherited;};
+      $('#inheritDefaultRule').addEventListener('change',updateWarningInheritance);
       const openWarningRuleEditor=field=>{
         if(!field||warningFieldKind(field)==='text')return;editingWarningFieldCode=field.code;
-        const rule=thresholdRules[field.code];
-        warningLevelDraft=clone(rule?.levels||[{severity:'提示',color:severityColors[0]}]).map(level=>({...level,condition:level.min!=null&&level.max!=null?'range':level.min!=null?'min':'max'}));
+        const boolean=warningFieldKind(field)==='boolean';
+        if(alertScopeMode==='default'&&boolean)return toast('布尔异常值仅支持设备自定义配置。');
+        const rule=displayedRule(field.code);
+        warningLevelDraft=clone(rule?.levels||[{severity:'提示',color:severityColors[0]}]);
+        const first=warningLevelDraft[0];warningConditionDraft=rule?.condition||(first.min!=null&&first.max!=null?'range':first.min!=null?'min':'max');
+        $('#warningConditionInput').value=warningConditionDraft;
         $('#warningRuleFieldName').textContent=field.name;$('#warningRuleFieldMeta').textContent=field.code+' · '+field.type+' · '+(field.unit||'-');
-        $('#warningRuleScopeName').textContent='全平台统一规则';$('#warningRuleScopePath').textContent='适用于所有设备的同一标准字段';
-        $('#inheritRuleOption').classList.add('hidden');$('#warningDurationInput').value=rule?.duration??30;$('#warningEnabledInput').value=rule?.enabled===false?'disabled':'enabled';
-        $('#warningRuleFormError').textContent='';$('#warningRuleHint').textContent=warningFieldKind(field)==='boolean'?'填写实际异常值，与采集数据匹配。':'等于上下限视为正常；更严重等级的正常范围应包含较低等级的范围。';
+        $('#warningRuleScopeName').textContent=alertScopeMode==='default'?'平台默认规则':'设备自定义规则';$('#warningRuleScopePath').textContent=alertScopeMode==='default'?'适用于未自定义的数值字段':currentContext().text;
+        $('#inheritRuleOption').classList.toggle('hidden',alertScopeMode==='default'||boolean);
+        $('#inheritDefaultRule').checked=alertScopeMode==='pump'&&!boolean&&!configuredRule(field.code);
+        $('#warningEnabledInput').value=rule?.enabled===false?'disabled':'enabled';updateWarningInheritance();
+        $('#warningRuleFormError').textContent='';$('#warningRuleHint').textContent=boolean?(plcReturnedValues(field.code).length?'异常值枚举来源于当前设备的 PLC 返回值（演示）；按相等判断。':'当前设备尚无 PLC 返回值枚举，请先完成采集接入。'):'所有等级共用一种预警条件；等于上下限视为正常。';
         renderWarningLevels();openModal('warningRuleModal');
       };
       const displayTypeName = type => ({ number:'数值＋单位', status:'状态标签', progress:'进度条', trend:'小型趋势' }[type] || '数值＋单位');
@@ -2564,14 +2587,15 @@
       $('#warningScopeSwitch').addEventListener('click', event => {
         const button = event.target.closest('[data-warning-scope]'); if (!button) return;
         alertScopeMode = button.dataset.warningScope;
-        $$('[data-warning-scope]').forEach(item => item.classList.toggle('active', item === button));
+        $$('[data-warning-scope]').forEach(item => {item.classList.toggle('active', item === button);item.setAttribute('aria-selected',String(item===button));});
         $('#warningPumpContext').classList.toggle('disabled', alertScopeMode === 'default');
-        $('#warningScopeNote').innerHTML = alertScopeMode === 'default' ? '<strong>正在维护平台默认规则</strong>泵机未配置自定义规则时自动继承' : `<strong>正在维护 ${esc(currentContext().pump.name)}</strong>可继承默认规则或保存泵机自定义规则`;
+        $('#warningPumpContext').hidden=alertScopeMode==='default';
+        updateWarningScopeNote();
         renderWarningRules();
       });
       $('#warningRuleTableBody').addEventListener('click', event => {
         const toggle=event.target.closest('[data-toggle-warning]');
-        if(toggle){const rule=thresholdRules[toggle.dataset.toggleWarning];if(!rule||toggle.disabled)return;rule.enabled=rule.enabled===false;renderWarningRules();renderPanel();toast(rule.enabled?'规则已启用':'规则已停用');return;}
+        if(toggle){const code=toggle.dataset.toggleWarning;let rule=displayedRule(code);if(!rule||toggle.disabled)return;if(alertScopeMode==='pump'&&!configuredRule(code)){rule=clone(rule);(pumpThresholdRules[currentPumpId]||={})[code]=rule;}rule.enabled=rule.enabled===false;renderWarningRules();renderPanel();toast(rule.enabled?'规则已启用':'规则已停用');return;}
         const row = event.target.closest('[data-warning-field]'); if (!row) return;
         openWarningRuleEditor(standardFields.find(field => field.code === row.dataset.warningField));
       });
@@ -2605,20 +2629,24 @@
         const plant = project.plants[0];
         const unit = plant.units[0];
         switchPumpContext(project.id, plant.id, unit.id, unit.pumps[0].id);
-        $('#warningScopeNote').innerHTML = `<strong>正在维护 ${esc(currentContext().pump.name)}</strong>可继承默认规则或保存泵机自定义规则`;
+        updateWarningScopeNote();
       });
       $('#alertPlantSelect').addEventListener('change', event => {
         const project = hierarchy.find(item => item.id === currentProjectId) || hierarchy[0];
         const plant = project.plants.find(item => item.id === event.target.value) || project.plants[0];
         const unit = plant.units[0];
         switchPumpContext(project.id, plant.id, unit.id, unit.pumps[0].id);
-        $('#warningScopeNote').innerHTML = `<strong>正在维护 ${esc(currentContext().pump.name)}</strong>可继承默认规则或保存泵机自定义规则`;
+        updateWarningScopeNote();
+      });
+      $('#alertUnitSelect').addEventListener('change',event=>{
+        const context=currentContext(),unit=context.plant.units.find(item=>item.id===event.target.value)||context.plant.units[0];
+        switchPumpContext(currentProjectId,currentPlantId,unit.id,unit.pumps[0].id);updateWarningScopeNote();
       });
       $('#alertPumpSelect').addEventListener('change', event => {
         const context = currentContext();
         const unit = context.plant.units.find(item => item.pumps.some(pump => pump.id === event.target.value)) || context.plant.units[0];
         switchPumpContext(currentProjectId, currentPlantId, unit.id, event.target.value);
-        $('#warningScopeNote').innerHTML = `<strong>正在维护 ${esc(currentContext().pump.name)}</strong>可继承默认规则或保存泵机自定义规则`;
+        updateWarningScopeNote();
       });
       $('#openPumpTree').addEventListener('click', event => { event.stopPropagation(); setPumpTreeOpen(!$('#pumpTreePopover').classList.contains('open')); });
       $('#closePumpTree').addEventListener('click', () => setPumpTreeOpen(false));
@@ -2795,23 +2823,26 @@
         closeModal('fieldModal'); renderFieldTable($('#fieldSearch').value); renderWarningRules(); toast(editingFieldCode ? '标准字段已更新' : '标准字段已新增');
       });
 
-      const captureWarningLevels=()=>$('#warningLevelRows [data-level-prop]').forEach(input=>{warningLevelDraft[Number(input.closest('[data-level-index]').dataset.levelIndex)][input.dataset.levelProp]=input.value;});
-      $('#warningLevelRows').addEventListener('change',event=>{captureWarningLevels();if(event.target.dataset.levelProp==='condition')renderWarningLevels();});
+      const captureWarningLevels=()=>$$('#warningLevelRows [data-level-prop]').forEach(input=>{warningLevelDraft[Number(input.closest('[data-level-index]').dataset.levelIndex)][input.dataset.levelProp]=input.value;});
+      $('#warningLevelRows').addEventListener('change',captureWarningLevels);
+      $('#warningConditionInput').addEventListener('change',event=>{captureWarningLevels();warningConditionDraft=event.target.value;renderWarningLevels();});
       $('#warningLevelRows').addEventListener('click',event=>{const remove=event.target.closest('[data-remove-level]');if(!remove)return;captureWarningLevels();warningLevelDraft.splice(Number(remove.dataset.removeLevel),1);renderWarningLevels();});
-      $('#addWarningLevel').addEventListener('click',()=>{captureWarningLevels();const severity=severityNames.find(name=>!warningLevelDraft.some(level=>level.severity===name));if(!severity)return;warningLevelDraft.push({severity,color:severityColors[severityNames.indexOf(severity)],condition:'max'});renderWarningLevels();});
+      $('#addWarningLevel').addEventListener('click',()=>{captureWarningLevels();const severity=severityNames.find(name=>!warningLevelDraft.some(level=>level.severity===name));if(!severity)return;warningLevelDraft.push({severity,color:severityColors[severityNames.indexOf(severity)]});renderWarningLevels();});
       $('#saveWarningRule').addEventListener('click',()=>{
         captureWarningLevels();const field=standardFields.find(field=>field.code===editingWarningFieldCode),error=$('#warningRuleFormError');
-        const fail=text=>{error.textContent=text;};const duration=Number($('#warningDurationInput').value);
-        if(!$('#warningDurationInput').value||!Number.isInteger(duration)||duration<0)return fail('持续时间须为非负整数。');
+        const fail=text=>{error.textContent=text;};
+        const boolean=warningFieldKind(field)==='boolean';
+        if(alertScopeMode==='default'&&boolean)return fail('平台默认规则不支持布尔异常值。');
+        if(alertScopeMode==='pump'&&!boolean&&$('#inheritDefaultRule').checked){delete (pumpThresholdRules[currentPumpId]||{})[field.code];closeModal('warningRuleModal');renderWarningRules();renderPanel();return toast('已恢复使用平台默认规则');}
         if(!warningLevelDraft.length)return fail('请至少配置一个等级。');
         if(new Set(warningLevelDraft.map(level=>level.severity)).size!==warningLevelDraft.length)return fail('同一等级不能重复配置。');
-        const boolean=warningFieldKind(field)==='boolean',levels=[];
+        const levels=[];
         for(const draft of warningLevelDraft){
           const level={severity:draft.severity,color:draft.color};
-          if(boolean){if(!String(draft.abnormalValue??'').trim())return fail('请填写异常值。');level.abnormalValue=String(draft.abnormalValue).trim();}
+          if(boolean){if(!plcReturnedValues(field.code).includes(String(draft.abnormalValue??'')))return fail('请从当前 PLC 返回值中选择异常值。');level.abnormalValue=String(draft.abnormalValue);}
           else{
             for(const side of ['min','max']){
-              if((side==='min'&&draft.condition==='max')||(side==='max'&&draft.condition==='min'))continue;
+              if((side==='min'&&warningConditionDraft==='max')||(side==='max'&&warningConditionDraft==='min'))continue;
               if(draft[side]==null||String(draft[side]).trim()===''||!Number.isFinite(Number(draft[side])))return fail('请填写有效的阈值。');
               level[side]=Number(draft[side]);
             }
@@ -2824,8 +2855,9 @@
           if((b.min??-Infinity)>(a.min??-Infinity)||(b.max??Infinity)<(a.max??Infinity))return fail('更严重等级的正常范围必须包含较低等级的正常范围。');
           if(b.min===a.min&&b.max===a.max)return fail('不同等级不能使用完全相同的阈值。');
         }
-        thresholdRules[field.code]={duration,enabled:$('#warningEnabledInput').value==='enabled',levels};
-        closeModal('warningRuleModal');renderWarningRules();renderPanel();toast('全平台预警规则已保存');
+        const rule={condition:boolean?'equals':warningConditionDraft,enabled:$('#warningEnabledInput').value==='enabled',levels};
+        if(alertScopeMode==='default')thresholdRules[field.code]=rule;else (pumpThresholdRules[currentPumpId]||={})[field.code]=rule;
+        closeModal('warningRuleModal');renderWarningRules();renderPanel();toast(alertScopeMode==='default'?'平台默认规则已保存':'当前设备自定义规则已保存');
       });
 
       const renderTemplateChoices = () => {
