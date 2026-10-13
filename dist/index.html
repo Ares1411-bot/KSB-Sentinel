@@ -1892,7 +1892,7 @@
       </section>
     </div>
 
-    <div class="modal-layer" id="pointGroupModal" aria-hidden="true"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pointGroupTitle"><header class="modal-header"><div><h2 id="pointGroupTitle">新增采集组</h2><p>同组点位采用相同的采集频率。</p></div><button class="modal-close" data-close-modal="pointGroupModal" type="button">×</button></header><div class="modal-body"><div class="form-grid"><label><span>组名 <em>*</em></span><input id="pointGroupName" placeholder="填写组名"></label><label><span>采集频率（Hz）<em>*</em></span><input id="pointGroupFrequency" type="number" min="0.001" step="any" value="1"></label></div><div class="form-error" id="pointGroupError" role="alert"></div></div><footer class="modal-footer"><button class="secondary-action" data-close-modal="pointGroupModal" type="button">取消</button><button class="primary-action" id="savePointGroup" type="button">保存组</button></footer></section></div>
+    <div class="modal-layer" id="pointGroupModal" aria-hidden="true"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pointGroupTitle"><header class="modal-header"><div><h2 id="pointGroupTitle">新增采集组</h2><p>同组点位采用相同的采集间隔。</p></div><button class="modal-close" data-close-modal="pointGroupModal" type="button">×</button></header><div class="modal-body"><div class="form-grid"><label><span>组名 <em>*</em></span><input id="pointGroupName" placeholder="填写组名"></label><label><span>采集间隔（ms）<em>*</em></span><input id="pointGroupInterval" type="number" min="1" step="1" value="1000"></label></div><div class="form-error" id="pointGroupError" role="alert"></div></div><footer class="modal-footer"><button class="secondary-action" data-close-modal="pointGroupModal" type="button">取消</button><button class="primary-action" id="savePointGroup" type="button">保存组</button></footer></section></div>
     <div class="modal-layer" id="addDeviceModal" aria-hidden="true">
       <section class="modal-card modal-xl" role="dialog" aria-modal="true" aria-labelledby="addDeviceTitle">
         <header class="modal-header"><div><h2 id="addDeviceTitle">添加 PLC 设备</h2><p>选择模板，按现场情况调整设备与点位信息，然后连接中转平台。</p></div><button class="modal-close" data-close-modal="addDeviceModal" type="button">×</button></header>
@@ -2740,7 +2740,7 @@
         if (pointField) { const found = findSource(pointField.dataset.source); if (found) found.metric[pointField.dataset.pointField] = Number(pointField.value); renderPanel(); renderDeviceTable($('#deviceSearch').value); }
       });
 
-      const groupsFrom=source=>clone(source.groups||[...new Set(source.points.map(item=>item.templateGroup||'默认组'))].map(name=>({name,frequency:1})));
+      const groupsFrom=source=>clone(source.groups||[...new Set(source.points.map(item=>item.templateGroup||'默认组'))].map(name=>({name,intervalMs:1000})));
       const protocolSchemas={
         S7:[{key:'rack',label:'机架号',type:'number',value:'0'},{key:'slot',label:'插槽号',type:'number',value:'1'},{key:'timeout',label:'通信超时（ms）',type:'number',value:'3000'},{key:'reconnect',label:'自动重连',type:'radio',options:['启用','停用'],value:'启用'}],
         'Modbus TCP':[{key:'station',label:'站号',type:'number',value:'1'},{key:'timeout',label:'通信超时（ms）',type:'number',value:'3000'},{key:'byteOrder',label:'字节序',type:'radio',options:['ABCD','CDAB','BADC','DCBA'],value:'ABCD'}],
@@ -2778,13 +2778,13 @@
           return `<button class="template-group-tab ${group === selectedTemplateGroup ? 'active' : ''}" data-template-group="${esc(group)}" role="tab" aria-selected="${group === selectedTemplateGroup}" type="button">${esc(group)}<small>${count}</small></button>`;
         }).join('');
         const current=templateDraftGroups.find(group=>group.name===selectedTemplateGroup);
-        $('#templateGroupMeta').textContent=current?'采集频率：'+current.frequency+' Hz':'暂无采集组';
+        $('#templateGroupMeta').textContent=current?'采集间隔：'+current.intervalMs+' ms':'暂无采集组';
         $('#editTemplateGroup').disabled=!current;
         const visiblePoints = templateDraftPoints.map((item,index) => ({ item,index })).filter(({item}) => (item.templateGroup || '默认组') === selectedTemplateGroup);
         $('#templatePointBody').innerHTML = visiblePoints.map(({item,index})=>pointEditorCells(item,index,true)).join('') || '<tr><td colspan="12" class="point-empty">该组暂无点位，可点击“新增点位”添加</td></tr>';
       };
       const openTemplateEditor = sourceTemplate => {
-        const source = sourceTemplate || {name:'',protocol:'',ip:'',port:'',points:[],groups:[{name:'默认组',frequency:1}]};
+        const source = sourceTemplate || {name:'',protocol:'',ip:'',port:'',points:[],groups:[{name:'默认组',intervalMs:1000}]};
         editingTemplateId = source.id||'';
         $('#templateProtocolDetails').open=false;
         $('#templateModalTitle').textContent=editingTemplateId?'编辑 PLC 设备模板':'新增 PLC 设备模板';
@@ -2919,7 +2919,7 @@
       const renderDevicePoints = () => {
         if(!deviceDraftGroups.some(group=>group.name===selectedDeviceGroup))selectedDeviceGroup=deviceDraftGroups[0]?.name||'默认组';
         $('#deviceGroupTabs').innerHTML=deviceDraftGroups.map(group=>'<button class="template-group-tab '+(group.name===selectedDeviceGroup?'active':'')+'" role="tab" aria-selected="'+(group.name===selectedDeviceGroup)+'" data-device-group="'+esc(group.name)+'" type="button">'+esc(group.name)+'<small>'+deviceDraftPoints.filter(item=>(item.templateGroup||'默认组')===group.name).length+'</small></button>').join('');
-        const current=deviceDraftGroups.find(group=>group.name===selectedDeviceGroup);$('#deviceGroupMeta').textContent=current?'采集频率：'+current.frequency+' Hz':'';
+        const current=deviceDraftGroups.find(group=>group.name===selectedDeviceGroup);$('#deviceGroupMeta').textContent=current?'采集间隔：'+current.intervalMs+' ms':'';
         $('#devicePointBody').innerHTML = deviceDraftPoints.map((item,index)=>({item,index})).filter(({item})=>(item.templateGroup||'默认组')===selectedDeviceGroup).map(({item,index})=>pointEditorCells(item,index)).join('')||'<tr><td colspan="10" class="point-empty">该组暂无点位，可点击“新增点位”添加</td></tr>';
       };
       const prepareDeviceForm = () => {
@@ -2945,15 +2945,15 @@
       const openPointGroup=(target,edit=false)=>{
         groupEditorTarget=target;editingGroupName=edit?(target==='template'?selectedTemplateGroup:selectedDeviceGroup):'';
         const group=(target==='template'?templateDraftGroups:deviceDraftGroups).find(item=>item.name===editingGroupName);
-        $('#pointGroupTitle').textContent=edit?'编辑采集组':'新增采集组';$('#pointGroupName').value=group?.name||'';$('#pointGroupFrequency').value=group?.frequency??1;$('#pointGroupError').textContent='';openModal('pointGroupModal');
+        $('#pointGroupTitle').textContent=edit?'编辑采集组':'新增采集组';$('#pointGroupName').value=group?.name||'';$('#pointGroupInterval').value=group?.intervalMs??1000;$('#pointGroupError').textContent='';openModal('pointGroupModal');
       };
       $('#addDeviceGroup').addEventListener('click',()=>openPointGroup('device'));$('#editDeviceGroup').addEventListener('click',()=>openPointGroup('device',true));
       $('#addTemplateGroup').addEventListener('click',()=>openPointGroup('template'));$('#editTemplateGroup').addEventListener('click',()=>openPointGroup('template',true));
       document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#pointGroupModal').classList.contains('open')){event.preventDefault();event.stopImmediatePropagation();closeModal('pointGroupModal');}},true);
       $('#savePointGroup').addEventListener('click',()=>{
-        const name=$('#pointGroupName').value.trim(),frequency=Number($('#pointGroupFrequency').value),groups=groupEditorTarget==='template'?templateDraftGroups:deviceDraftGroups;
-        const error=$('#pointGroupError');error.textContent='';if(!name){error.textContent='请填写组名。';return;}if(!Number.isFinite(frequency)||frequency<=0){error.textContent='采集频率须大于 0 Hz。';return;}if(groups.some(group=>group.name===name&&group.name!==editingGroupName)){error.textContent='组名不能重复。';return;}
-        const group=groups.find(item=>item.name===editingGroupName);if(group){group.name=name;group.frequency=frequency;const points=groupEditorTarget==='template'?templateDraftPoints:deviceDraftPoints;points.filter(item=>(item.templateGroup||'默认组')===editingGroupName).forEach(item=>item.templateGroup=name);}else groups.push({name,frequency});
+        const name=$('#pointGroupName').value.trim(),intervalMs=Number($('#pointGroupInterval').value),groups=groupEditorTarget==='template'?templateDraftGroups:deviceDraftGroups;
+        const error=$('#pointGroupError');error.textContent='';if(!name){error.textContent='请填写组名。';return;}if(!Number.isInteger(intervalMs)||intervalMs<=0){error.textContent='采集间隔须为大于 0 的整数（ms）。';return;}if(groups.some(group=>group.name===name&&group.name!==editingGroupName)){error.textContent='组名不能重复。';return;}
+        const group=groups.find(item=>item.name===editingGroupName);if(group){group.name=name;group.intervalMs=intervalMs;const points=groupEditorTarget==='template'?templateDraftPoints:deviceDraftPoints;points.filter(item=>(item.templateGroup||'默认组')===editingGroupName).forEach(item=>item.templateGroup=name);}else groups.push({name,intervalMs});
         if(groupEditorTarget==='template'){selectedTemplateGroup=name;renderTemplatePoints();}else{selectedDeviceGroup=name;renderDevicePoints();}closeModal('pointGroupModal');
       });
       const sampleValue = field => field.type === 'BOOLEAN' ? '运行' : ({ inlet_pressure:.31, outlet_pressure:2.46, running_frequency:35.2, current_ab:9.2, current_bc:9.0, current_ca:9.1, voltage_a:381.4, total_energy:631169.2, active_power:119.4, bearing_temperature:42.6 }[field.code] ?? 18.6);

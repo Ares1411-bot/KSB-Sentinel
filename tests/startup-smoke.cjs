@@ -81,7 +81,7 @@ const targetData=(key,value,selector)=>({dataset:{[key]:value},closest:s=>s===se
 const groupTab=name=>node('#deviceGroupTabs').fire('click',{target:targetData('deviceGroup',name,'[data-device-group]')});
 const pointAction=(body,index)=>node(body).fire('click',{target:targetData('pointDelete',String(index),'[data-point-delete]')});
 const editPoint=(body,index,field,value)=>node(body).fire('input',{target:{dataset:{field},value,closest:s=>s==='tr'?{dataset:{index:String(index)}}:null}});
-const setGroup=(name,frequency)=>{node('#pointGroupName').value=name;node('#pointGroupFrequency').value=String(frequency);node('#savePointGroup').fire('click');assert.equal(node('#pointGroupError').textContent,'');};
+const setGroup=(name,frequency)=>{node('#pointGroupName').value=name;node('#pointGroupInterval').value=String(frequency);node('#savePointGroup').fire('click');assert.equal(node('#pointGroupError').textContent,'');};
 const openTemplate=id=>node('#templateTableBody').fire('click',{target:targetData('mapTemplate',id,'[data-map-template]')});
 node('#addPlcButton').fire('click');node('#wizardNext').fire('click');
 assert.equal(node('#deviceProtocolDetails').open,false);assert(node('#deviceProtocolFields').innerHTML.includes('机架号'));
@@ -91,13 +91,13 @@ assert(node('#deviceGroupTabs').innerHTML.includes('运行控制'));assert(node(
 pointAction('#devicePointBody',0);assert(node('#devicePointBody').innerHTML.includes('point-pending-delete'));assert(node('#devicePointBody').innerHTML.includes('恢复'));assert(node('#devicePointBody').innerHTML.includes('disabled'));
 pointAction('#devicePointBody',0);assert(!node('#devicePointBody').innerHTML.includes('point-pending-delete'));
 groupTab('压力与频率');pointAction('#devicePointBody',1);
-node('#addDeviceGroup').fire('click');setGroup('设备新增组',2);assert(node('#deviceGroupTabs').innerHTML.includes('设备新增组'));assert(node('#deviceGroupMeta').textContent.includes('2 Hz'));assert(node('#devicePointBody').innerHTML.includes('暂无点位'));
+node('#addDeviceGroup').fire('click');setGroup('设备新增组',500);assert(node('#deviceGroupTabs').innerHTML.includes('设备新增组'));assert(node('#deviceGroupMeta').textContent.includes('500 ms'));assert(node('#devicePointBody').innerHTML.includes('暂无点位'));
 node('#addDevicePoint').fire('click');assert(node('#devicePointBody').innerHTML.includes('POINT_5'));
 editPoint('#devicePointBody',4,'name','新组点位');
 node('#wizardPrevious').fire('click');node('#wizardNext').fire('click');assert(node('#deviceGroupTabs').innerHTML.includes('设备新增组'),'wizard back/forward preserves draft');
 node('#deviceNameInput').value='组功能检查PLC';node('#wizardNext').fire('click');
 node('#connectionVisual').fire('click',{target:targetData('failureAction','skip','[data-failure-action]')});
-let savedDevice=api.devices().at(-1);assert.equal(savedDevice.name,'组功能检查PLC');assert(savedDevice.groups.some(g=>g.name==='设备新增组'&&g.frequency===2));assert(!savedDevice.points.some(p=>p.key==='IN_PRESS'));assert(savedDevice.points.some(p=>p.name==='新组点位'&&p.templateGroup==='设备新增组'));assert(savedDevice.points.every(p=>!p.deleted));
+let savedDevice=api.devices().at(-1);assert.equal(savedDevice.name,'组功能检查PLC');assert(savedDevice.groups.some(g=>g.name==='设备新增组'&&g.intervalMs===500));assert(!savedDevice.points.some(p=>p.key==='IN_PRESS'));assert(savedDevice.points.some(p=>p.name==='新组点位'&&p.templateGroup==='设备新增组'));assert(savedDevice.points.every(p=>!p.deleted));
 assert.equal(savedDevice.protocolConfig.rack,'7','collapsed device protocol edits are saved');
 openTemplate('tpl-s7');assert(!node('#templatePointBody').innerHTML.includes('point-pending-delete'),'device deletion does not change template');assert(node('#templatePointBody').innerHTML.includes('data-field="address"'));assert(node('#templatePointBody').innerHTML.includes('data-field="description"'));
 assert.equal(node('#templateProtocolDetails').open,false);assert(!node('#templateProtocolFields').innerHTML.includes('value="7"'),'device protocol edit must not change template');
@@ -105,7 +105,7 @@ node('#templateProtocolFields').fire('input',{target:{dataset:{protocolField:'ra
 node('#templateProtocolInput').value='Modbus TCP';node('#templateProtocolInput').fire('change');assert(node('#templateProtocolFields').innerHTML.includes('字节序'));
 node('#templateProtocolInput').value='S7';node('#templateProtocolInput').fire('change');assert(node('#templateProtocolFields').innerHTML.includes('value="5"'),'protocol values preserved on switching');
 node('#templateNameInput').value='编辑后的S7模板';editPoint('#templatePointBody',0,'name','编辑后状态点');editPoint('#templatePointBody',0,'address','DB9.DBX0.0');
-node('#addTemplateGroup').fire('click');setGroup('诊断组',5);node('#addTemplatePoint').fire('click');editPoint('#templatePointBody',4,'address','DB9.DBD2');
+node('#addTemplateGroup').fire('click');setGroup('诊断组',200);node('#addTemplatePoint').fire('click');editPoint('#templatePointBody',4,'address','DB9.DBD2');
 node('#saveTemplateButton').fire('click');assert.equal(node('#templateFormError').textContent,'');assert(node('#templateTableBody').innerHTML.includes('编辑后的S7模板'));
 openTemplate('tpl-s7');assert.equal(node('#templateNameInput').value,'编辑后的S7模板');assert(node('#templatePointBody').innerHTML.includes('编辑后状态点'));assert(node('#templatePointBody').innerHTML.includes('DB9.DBX0.0'));assert(node('#templateGroupTabs').innerHTML.includes('诊断组'));
 node('#addTemplateButton').fire('click');assert.equal(node('#templateNameInput').value,'');assert(node('#templateProtocolFields').innerHTML.includes('请选择协议'));
