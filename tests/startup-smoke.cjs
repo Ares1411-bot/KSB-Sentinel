@@ -3,17 +3,18 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const nodes=new Map();
 class Node {
  constructor(id=''){this.id=id;this.value='';this.hidden=false;this.dataset={};this.style={};this.innerHTML='';this.listeners={};this.attrs={};const s=new Set();this.classList={add:(...a)=>a.forEach(x=>s.add(x)),remove:(...a)=>a.forEach(x=>s.delete(x)),contains:x=>s.has(x),toggle:(x,v)=>{if(v===undefined)v=!s.has(x);v?s.add(x):s.delete(x);}};}
- addEventListener(type,fn){(this.listeners[type]||=[]).push(fn);} fire(type,event={}){event.target||=this;for(const fn of this.listeners[type]||[])fn(event);} setAttribute(k,v){this.attrs[k]=v;} getAttribute(k){return this.attrs[k]||'';} focus(){} append(){} insertAdjacentElement(){} getBoundingClientRect(){return{left:500,top:100};} querySelector(s){return node(s);} querySelectorAll(){return [];} closest(s){return s==='[data-expanded-range]'&&this.dataset.expandedRange?this:null;}
+ addEventListener(type,fn){(this.listeners[type]||=[]).push(fn);} fire(type,event={}){event.target||=this;for(const fn of this.listeners[type]||[])fn(event);} setAttribute(k,v){this.attrs[k]=v;} getAttribute(k){return this.attrs[k]||'';} focus(){} append(...children){this.children||=[];this.children.push(...children);} insertAdjacentElement(){} getBoundingClientRect(){return{left:500,top:100};} querySelector(s){return node(s);} querySelectorAll(){return [];} closest(s){return s==='[data-expanded-range]'&&this.dataset.expandedRange?this:null;}
 }
 function node(s){if(!nodes.has(s))nodes.set(s,new Node(s));return nodes.get(s);}
 const document=new Node();document.querySelector=node;document.createElement=()=>new Node();document.body=new Node();document.activeElement=new Node();
-const window={innerWidth:1500,addEventListener(){}};
-const ctx=vm.createContext({document,window,Date,console,URL,Map,Set,setTimeout(){},clearTimeout(){},setInterval(){},localStorage:{getItem(){return null;},setItem(){}},requestAnimationFrame:fn=>fn()});
-const script=fs.readFileSync('dist/index.html','utf8').match(/<script>\s*([\s\S]*?)<\/script>/)[1];
-vm.runInContext(script,ctx);
+const storage=new Map(),sessionStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+const window={sessionStorage,innerWidth:1500,addEventListener(){},location:{search:'',assign(url){this.lastURL=url;}}};document.body.dataset.prototype='plc';
+const ctx=vm.createContext({document,window,Date,console,URL,URLSearchParams,sessionStorage,Map,Set,setTimeout(){},clearTimeout(){},setInterval(){},localStorage:{getItem(){return null;},setItem(){}},requestAnimationFrame:fn=>fn()});
+const script=fs.readFileSync('dist/plc/app.js','utf8');
+for(const file of ['shared/js/event-timeline.js','shared/js/session.js','shared/js/hierarchy.js','shared/js/shell.js','plc/data/demo-data.js','plc/app.js'])vm.runInContext(fs.readFileSync('dist/'+file,'utf8'),ctx);
 assert(node('#plcMetricSections').innerHTML.includes('进口压力'));
 assert(node('#plcMetricSections').innerHTML.includes('mini-expand'));
-for(const file of ['alert-records.js','expanded-trends.js'])vm.runInContext(fs.readFileSync('dist/assets/'+file,'utf8'),ctx);
+for(const file of ['events.js','records-view.js','alerts-link.js','expanded-trends.js'])vm.runInContext(fs.readFileSync('dist/plc/'+file,'utf8'),ctx);
 window.sentinelPrototype.openTrend('plc-main:in-pressure');
 assert(node('#trendChart').innerHTML.includes('<path'));
 window.sentinelPrototype.openTrend('plc-main:out-pressure');
@@ -74,7 +75,7 @@ pump('pump-omega-1');assert.equal(api.effectiveThresholdRule('running_status').l
 editor('current_ab');node('#inheritDefaultRule').checked=true;node('#inheritDefaultRule').fire('change');node('#saveWarningRule').fire('click');assert.equal(api.effectiveThresholdRule('current_ab').levels[0].min,10,'restore inherited rule');
 node('#alertProjectSelect').fire('change',{target:{value:'project-east'}});assert.equal(api.context().project.id,'project-east');assert.equal(api.context().unit.id,'unit-pressure');assert.equal(api.context().pump.id,'pump-pressure-1');
 assert(!api.effectiveThresholdRule('running_status'),'boolean custom rules remain isolated across projects');
-assert(!fs.readFileSync('dist/index.html','utf8').includes('warningDurationInput'));
+assert(!script.includes('warningDurationInput'));
 console.log('PASS add levels, shared numeric condition, scoped rules/inheritance, device PLC boolean enums, project isolation, removed duration');
 
 const targetData=(key,value,selector)=>({dataset:{[key]:value},closest:s=>s===selector?{dataset:{[key]:value}}:null});
@@ -117,3 +118,28 @@ const row=node('#templateTableBody').innerHTML.match(/<tr><td>新建RTU模板[\s
 openTemplate(newId);assert(node('#templateProtocolFields').innerHTML.includes('value="奇校验" checked'));assert(node('#templatePointBody').innerHTML.includes('40001'));
 console.log('PASS device group tabs/add/frequency, point delete/restore/save exclusion, editable templates, new template validation, protocol dynamic fields/cache');
 
+const editDevice=api.devices()[0],editDeviceCount=api.devices().length,originalDevice=JSON.stringify(editDevice);
+const editDeviceClick=()=>node('#plcDeviceTableBody').fire('click',{target:targetData('editDevice',editDevice.id,'[data-edit-device]')});
+editDeviceClick();assert.equal(node('#addDeviceTitle').textContent,'编辑 PLC 设备');assert.equal(node('#wizardNext').textContent,'保存修改');assert.equal(node('#deviceNameInput').value,editDevice.name);assert(node('#addDeviceModal .wizard-steps').hidden);
+node('#deviceNameInput').value='未保存的设备名称';editPoint('#devicePointBody',0,'address','DB99.DBD0');node('#wizardPrevious').fire('click');assert.equal(JSON.stringify(editDevice),originalDevice,'cancel must not mutate current device');
+editDeviceClick();const originalPointIds=editDevice.points.map(p=>p.id),originalValue=editDevice.points[0].value,originalEnabled=editDevice.enabled;
+api.saveSession();const beforeSources=window.SentinelSession.get('plc.configuration').pumpStates[api.pumpId()].cardConfig.items.map(i=>i.source);
+node('#deviceNameInput').value='编辑后的主控PLC';editPoint('#devicePointBody',0,'address','DB7.DBX0.0');editPoint('#devicePointBody',0,'precision','3');editPoint('#devicePointBody',0,'factor','2');editPoint('#devicePointBody',0,'offset','1.5');node('#wizardNext').fire('click');
+assert.equal(api.devices().length,editDeviceCount);assert.equal(editDevice.name,'编辑后的主控PLC');assert.deepEqual(editDevice.points.map(p=>p.id),originalPointIds);assert.equal(editDevice.points[0].value,originalValue);assert.equal(editDevice.enabled,originalEnabled);assert.equal(editDevice.points[0].address,'DB7.DBX0.0');assert.equal(editDevice.points[0].precision,3);assert.equal(editDevice.points[0].factor,2);assert.equal(editDevice.points[0].offset,1.5);
+assert.deepEqual(window.SentinelSession.get('plc.configuration').pumpStates[api.pumpId()].cardConfig.items.map(i=>i.source),beforeSources,'editing preserves existing card references');
+const detailMarkup=node('#plcDeviceTableBody').innerHTML;for(const label of ['点位地址','精度','系数','偏移量','编辑设备'])assert(detailMarkup.includes(label));assert(!detailMarkup.includes('加入卡片'));assert(!detailMarkup.includes('小数位'));assert(!detailMarkup.includes('data-display-toggle'));assert(detailMarkup.includes('DB7.DBX0.0'));
+editDeviceClick();const deletedId=editDevice.points[0].id;pointAction('#devicePointBody',0);node('#wizardNext').fire('click');assert(!editDevice.points.some(p=>p.id===deletedId));assert(!window.SentinelSession.get('plc.configuration').pumpStates[api.pumpId()].cardConfig.items.some(i=>i.source===editDevice.id+':'+deletedId));
+node('#addPlcButton').fire('click');assert.equal(node('#addDeviceTitle').textContent,'添加 PLC 设备');assert(!node('#addDeviceModal .wizard-steps').hidden);assert.equal(node('#wizardNext').textContent,'下一步');node('#wizardPrevious').fire('click');
+console.log('PASS read-only device metadata, edit prefill/cancel/save, stable point IDs/card references, deletion cleanup and add/edit isolation');
+
+
+window.PLCRecords.persist();
+const locationBefore=window.location.lastURL;
+const plcEntry=node('#plcPanel .plc-summary').children.find(child=>child.id==='openPLCRecords');assert(plcEntry);plcEntry.fire('click');assert(node('#recordsModal').classList.contains('open'));assert.equal(window.location.lastURL,locationBefore);assert(node('#recordsRows').innerHTML.includes('PLC-E'));assert(!node('#recordsRows').innerHTML.includes('PHM-'));
+const fieldSource=api.devices().flatMap(d=>d.points.map(p=>({source:d.id+':'+p.id,code:p.standardCode}))).find(p=>window.PLCRecords.scopeEvents().some(e=>e.source===p.source));assert(fieldSource);api.openTrend(fieldSource.source);node('#fieldRecordsRange').value='all';node('.trend-alert-overview').fire('click');assert(node('#fieldRecords').classList.contains('open'));assert.equal(window.location.lastURL,locationBefore);
+const fieldIds=[...node('#fieldRecordRows').innerHTML.matchAll(/data-event="([^"]+)"/g)].map(m=>m[1]);assert(fieldIds.length);assert(fieldIds.every(id=>window.PLCRecords.events.find(e=>e.id===id).code===fieldSource.code));
+const localEvent=window.PLCRecords.scopeEvents().find(e=>!e.handledAt);assert(localEvent);window.PLCRecords.showEvent(localEvent.id);assert(node('#eventModal').classList.contains('open'));assert.equal(window.location.lastURL,locationBefore);node('#eventViewTrend').fire('click');assert(!node('#eventTrendDrawer').hidden);assert(node('#eventTrendChart').innerHTML.includes('<path'));node('#expandEventTrend').fire('click');assert(node('#expandedTrendChart').innerHTML.includes('<path'));window.PLCExpandedTrends.close();
+node('#eventMethod').value='现场检修';node('#eventDescription').value='PLC专属卡片中核查并完成处理';node('#submitEventProcess').fire('click');assert(localEvent.handledAt);assert(window.SentinelSession.get('plc.events').find(e=>e.id===localEvent.id).handledAt);assert.equal(window.location.lastURL,locationBefore);
+node('#openAlertCenterBell').fire('click');assert(window.location.lastURL.includes('../alerts/index.html?'));
+console.log('PASS PLC-only local list, field scope, event trend/enlargement, local processing persistence, and separate platform navigation');
+module.exports={storage,createEnvironment:require('./mock-dom.cjs')};

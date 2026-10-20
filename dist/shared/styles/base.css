@@ -1,0 +1,280 @@
+
+    :root {
+      --nav-height: 42px;
+      --ink: #263452;
+      --muted: #7c859a;
+      --line: #d9dee7;
+      --blue: #0f70b8;
+      --blue-deep: #35446d;
+      --surface: rgba(255, 255, 255, 0.94);
+      --shadow-sm: 0 4px 12px rgba(42, 58, 88, 0.14);
+      --shadow-panel: 0 18px 34px rgba(39, 53, 78, 0.19);
+      color-scheme: light;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+
+
+    * { box-sizing: border-box; }
+
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #edf2f8;
+      color: var(--ink);
+    }
+
+
+    button { font: inherit; }
+
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+
+    .global-header {
+      position: relative;
+      z-index: 50;
+      height: var(--nav-height);
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      padding: 0 17px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid rgba(160, 172, 193, 0.28);
+      box-shadow: 0 1px 7px rgba(64, 77, 101, 0.06);
+    }
+
+
+    .brand {
+      width: 126px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
+
+
+    .brand-mark {
+      width: 24px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      color: #76b9dc;
+      opacity: .8;
+    }
+
+
+    .brand-mark .icon { width: 25px; height: 30px; }
+
+
+    .brand-name {
+      color: #1683bd;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: .05em;
+      white-space: nowrap;
+    }
+
+
+    .brand-name small {
+      display: block;
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: #58a5cf;
+      margin-top: 3px;
+    }
+
+
+    .product-nav {
+      display: flex;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+
+    .product-item {
+      position: relative;
+      min-width: 137px;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #555f75;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+
+    .product-item + .product-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      height: 21px;
+      width: 1px;
+      background: #cbd1dc;
+    }
+
+
+    .product-item.active::after {
+      content: "";
+      position: absolute;
+      left: 17px;
+      right: 17px;
+      bottom: 0;
+      height: 3px;
+      background: #0f76bd;
+    }
+
+
+    .product-code {
+      font-weight: 900;
+      letter-spacing: -.04em;
+      color: #176486;
+      text-shadow: 1px 1px 0 rgba(55, 87, 111, .2);
+    }
+
+
+    .product-item.active .product-label { color: #27344f; }
+
+
+    .header-spacer { flex: 1 1 auto; min-width: 4px; }
+
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: #939caf;
+    }
+
+
+    .header-icon {
+      width: 42px;
+      height: 41px;
+      border: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      color: inherit;
+      position: relative;
+    }
+
+
+    .header-icon:hover { color: #4f607b; background: #f4f7fa; }
+
+
+    .notice-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      min-width: 22px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      padding: 0 5px;
+      color: #fff;
+      background: #ee4d5c;
+      font-size: 10px;
+      line-height: 1;
+      box-shadow: 0 0 0 2px #fff;
+    }
+
+
+    .user-area {
+      height: 100%;
+      min-width: 151px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      border-left: 1px solid #e3e6ec;
+      padding-left: 18px;
+      font-size: 13px;
+      color: #30343c;
+      white-space: nowrap;
+    }
+
+
+    .user-logo {
+      width: 25px;
+      height: 25px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #0a6ca5, #223c69 55%, #e7ad36 56%, #f7e4b8);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.88);
+    }
+
+
+    .fan-badge .icon {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      stroke: none;
+      animation: fan-spin 3.2s linear infinite;
+    }
+
+    .panel-close .icon { width: 19px; height: 19px; stroke-width: 2.5; }
+@media (max-width: 1450px){
+      .global-header { gap: 4px; padding-left: 12px; padding-right: 10px; }
+
+      .brand { width: 112px; }
+
+      .product-item { min-width: 116px; padding-inline: 14px; }
+
+      .product-item.active::after { left: 10px; right: 10px; }
+
+      .user-area { min-width: 125px; padding-left: 10px; }
+}
+@media (max-width: 1220px){
+      .brand { width: 104px; }
+
+      .brand-name { font-size: 12px; }
+
+      .product-item { min-width: 84px; padding-inline: 10px; gap: 5px; }
+
+      .product-label { display: none; }
+
+      .header-icon:nth-child(-n+2) { display: none; }
+
+      .user-area { min-width: 96px; }
+}
+@media (max-width: 1024px){
+      .header-icon { width: 36px; }
+
+      .user-name { display: none; }
+
+      .user-area { min-width: 48px; border-left: 0; padding-left: 4px; }
+}
+@media (prefers-reduced-motion: reduce){
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

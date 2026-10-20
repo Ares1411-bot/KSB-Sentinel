@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ebedf0">
+  <meta name="description" content="Sentinel 设备健康主页面与 PLC 实时数据交互原型">
+  <title>Sentinel 设备健康原型</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a70b7'/%3E%3Cpath d='M16 44V20h7v24zm12 0V27h7v17zm12 0V15h8v29z' fill='white'/%3E%3C/svg%3E">
+  
+  
+<link rel="stylesheet" href="../shared/styles/base.css">
+<link rel="stylesheet" href="./styles/dashboard.css">
+<link rel="stylesheet" href="../shared/styles/design-system.css">
+<link rel="stylesheet" href="./styles/management.css">
+<link rel="stylesheet" href="./styles/components.css">
+<link rel="stylesheet" href="./styles/records.css">
+<link rel="stylesheet" href="../shared/styles/shell.css">
+</head>
+<body data-prototype="plc">
+  <svg class="sr-only" aria-hidden="true" width="0" height="0">
+    <symbol id="i-tower" viewBox="0 0 24 24"><path d="M12 2v20M8 22h8M7 17l5-15 5 15M8.3 13h7.4M9.6 8h4.8"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M12 14h2M17 14h1M7 18h2M12 18h2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-max" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v6M12 17h.01"/></symbol>
+    <symbol id="i-books" viewBox="0 0 24 24"><rect x="3" y="5" width="5" height="15" rx="1"/><rect x="10" y="3" width="5" height="17" rx="1"/><path d="m17 5 3-1 3 14-4 1z"/></symbol>
+    <symbol id="i-beacon" viewBox="0 0 24 24"><path d="M8 15h8l-1-7a3 3 0 0 0-6 0zM6 18h12M4 21h16M12 3V1M5 6 3 4M19 6l2-2"/></symbol>
+    <symbol id="i-screen" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 13l3-3 2 2 4-5 2 2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 17v-4M12 17V7M17 17v-7"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h3M14 14l4-4 3 3M18 7v8"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></symbol>
+    <symbol id="i-fan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-2-4-1-7 2-7 3 0 3 4 1 7M14 12c4-2 7-1 7 2 0 3-4 3-7 1M12 14c2 4 1 7-2 7-3 0-3-4-1-7M10 12c-4 2-7 1-7-2 0-3 4-3 7-1"/></symbol>
+  </svg>
+
+  <header class="global-header">
+    <div class="brand" aria-label="凯泉卫士 Ki-Pump Sentinel">
+      <span class="brand-mark"><svg class="icon"><use href="#i-tower"/></svg></span>
+      <span class="brand-name">凯泉卫士<small>Ki-Pump Sentinel</small></span>
+    </div>
+
+    <nav class="product-nav" aria-label="产品导航">
+      <div class="product-item active"><span class="product-code">PHM</span><span class="product-label">设备健康</span></div>
+      <div class="product-item"><span class="product-code">APM</span><span class="product-label">设备能效</span></div>
+      <div class="product-item"><span class="product-code">SPM</span><span class="product-label">系统能效</span></div>
+      <div class="product-item"><span class="product-code">Mercury</span><span class="product-label">随诊箱</span></div>
+    </nav>
+
+    <div class="header-spacer"></div>
+    <div class="header-actions" aria-label="全局工具">
+      <button id="openAlertCenterButton" class="ac-global-entry" type="button">预警中心</button>
+      <button class="header-icon" type="button" aria-label="日历"><svg class="icon"><use href="#i-calendar"/></svg></button>
+      <button class="header-icon" type="button" aria-label="搜索"><svg class="icon"><use href="#i-search"/></svg></button>
+      <button class="header-icon" type="button" aria-label="语言">中</button>
+      <button class="header-icon" type="button" aria-label="全屏"><svg class="icon"><use href="#i-max"/></svg></button>
+      <button class="header-icon" id="openAlertCenterBell" type="button" aria-label="打开预警中心"><svg class="icon"><use href="#i-bell"/></svg><span class="notice-badge" id="alertCenterBadge">0</span></button>
+    </div>
+    <button class="user-area" id="userMenuButton" type="button" aria-expanded="false" aria-controls="accountMenu">
+      <span class="user-logo" aria-hidden="true"></span>
+      <span class="user-name">InternalDemo</span>
+      <span aria-hidden="true">⌄</span>
+    </button>
+  </header>
+
+  <div class="account-menu" id="accountMenu" aria-hidden="true">
+    <button type="button"><span>♙</span>个人中心</button>
+    <button type="button"><span>♧</span>布局管理</button>
+    <button type="button"><span>▣</span>设备总览</button>
+    <button type="button"><span>▤</span>系统总览</button>
+    <button type="button"><span>▥</span>设备台账</button>
+    <button type="button" id="openAlertCenterMenu"><span>!</span>预警中心<i>›</i></button>
+    <button type="button" id="plcManagementEntry"><span>PLC</span>PLC 管理<i>›</i></button>
+    <button type="button"><span>◉</span>数据管理</button>
+    <button type="button"><span>⚙</span>系统管理</button>
+    <button type="button"><span>□</span>公告管理</button>
+    <button type="button"><span>▨</span>报告管理</button>
+    <button type="button"><span>▤</span>测试管理</button>
+    <button type="button"><span>▱</span>系统工具</button>
+    <button type="button"><span>▣</span>系统监控</button>
+    <button type="button"><span>≋</span>随诊箱测试管理</button>
+    <button type="button"><span>≋</span>OTG测试管理</button>
+  </div>
+
+
+  <main class="app-shell">
+    <button type="button" class="app-menu" aria-label="应用菜单"><span class="app-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+
+    <div class="project-path" aria-label="当前设备层级">
+      <div class="path-item">Demo项目<span class="chevron" aria-hidden="true"></span></div>
+      <div class="path-item">送水泵房<span class="chevron" aria-hidden="true"></span></div>
+      <div class="path-item">1#Omega机组<span class="chevron" aria-hidden="true"></span></div>
+      <div class="path-item">1#泵<span class="chevron" aria-hidden="true"></span></div>
+    </div>
+
+    <div class="maintenance">月内保养提醒：近30天设备存在维修保养任务！</div>
+
+    <div class="utility-rail" aria-label="设备工具">
+      <button class="tool-btn alert" type="button" aria-label="设备异常"><svg class="icon"><use href="#i-alert"/></svg></button>
+      <button id="plcButton" class="tool-btn plc" type="button" aria-expanded="false" aria-controls="plcPanel">PLC</button>
+      <button class="tool-btn" type="button" aria-label="设备资料"><svg class="icon"><use href="#i-books"/></svg></button>
+      <button class="tool-btn" type="button" aria-label="告警"><svg class="icon"><use href="#i-beacon"/></svg></button>
+      <button class="tool-btn" type="button" aria-label="监测"><svg class="icon"><use href="#i-screen"/></svg></button>
+      <button class="tool-btn" type="button" aria-label="趋势"><svg class="icon"><use href="#i-chart"/></svg></button>
+      <button class="tool-btn" type="button" aria-label="清单"><svg class="icon"><use href="#i-list"/></svg></button>
+      <button class="tool-btn more" type="button" aria-label="更多"><span class="more-ring">···</span></button>
+    </div>
+
+    <section class="stage" aria-label="设备健康概览">
+      <div class="feature warning"><img src="../assets/feature-warning.png" alt="" draggable="false"><span class="feature-label">异常预警</span></div>
+      <div class="feature diagnosis"><img src="../assets/feature-diagnosis.png" alt="" draggable="false"><span class="feature-label">智能诊断</span></div>
+      <div class="feature monitor"><img src="../assets/feature-monitor.png" alt="" draggable="false"><span class="feature-label">实时监测</span></div>
+      <div class="feature life"><img src="../assets/feature-life.png" alt="" draggable="false"><span class="feature-label">寿命预测</span></div>
+
+      <div class="pump-wrap"><img src="../assets/pump.png" alt="1号 Omega 泵与电机设备模型" draggable="false"></div>
+
+      <div class="rpm-status" aria-label="设备转速 2951 转每分钟，数据来源 PLC">
+        <span class="fan-badge"><svg class="icon"><use href="#i-fan"/></svg></span>
+        <span class="rpm-copy"><span class="rpm-value">2951rpm</span><span class="rpm-source">(PLC) <span>?</span></span></span>
+      </div>
+    </section>
+
+    <aside id="trendPanel" class="trend-panel" aria-hidden="true" aria-labelledby="trendPanelTitle">
+      <div class="trend-inner">
+        <header class="trend-header">
+          <div><h2 id="trendPanelTitle">数据趋势</h2><p id="trendPanelSubtitle">选择实时数据后查看历史趋势</p></div>
+          <button id="trendClose" class="trend-close" type="button" aria-label="关闭数据趋势">×</button>
+        </header>
+        <div class="trend-content">
+          <section class="trend-alert-overview" aria-label="历史预警统计">
+            <div class="trend-alert-head"><div><span>所选时间范围内</span><strong id="trendAlertCount">0 次预警</strong></div><div class="trend-threshold-label" id="trendThresholdLabel">阈值：—</div></div>
+            <div class="trend-alert-summary" id="trendAlertSummary">暂无历史预警</div>
+            <div class="trend-alert-list" id="trendAlertList"></div>
+          </section>
+          <div class="trend-range" id="trendRangeButtons" aria-label="趋势时间范围">
+            <button type="button" data-trend-range="1h">1小时</button><button type="button" data-trend-range="6h">6小时</button><button type="button" data-trend-range="24h" class="active">24小时</button><button type="button" data-trend-range="7d">7天</button><button type="button" data-trend-range="custom">自定义</button>
+          </div>
+          <div class="custom-range" id="customTrendRange"><input id="trendStartTime" type="datetime-local" value="2026-10-08T08:00" aria-label="趋势开始时间"><input id="trendEndTime" type="datetime-local" value="2026-10-09T08:00" aria-label="趋势结束时间"><button id="applyCustomTrendRange" type="button">应用</button></div>
+          <div class="trend-chart-card">
+            <div class="trend-chart-caption"><strong id="trendChartTitle">历史变化</strong><span id="trendRangeLabel">最近24小时</span></div>
+            <svg class="trend-chart" id="trendChart" viewBox="0 0 440 250" role="img" aria-label="历史数据趋势图"></svg>
+            <div class="trend-tooltip" id="trendTooltip">将鼠标移至数据点查看详情</div>
+          </div>
+          <div class="trend-stats" id="trendStats"></div>
+        </div>
+      </div>
+    </aside>
+
+    <aside id="plcPanel" class="plc-panel" aria-hidden="true" aria-labelledby="plcPanelTitle">
+      <div class="panel-inner">
+        <header class="panel-header">
+          <svg class="icon panel-title-icon"><use href="#i-panel"/></svg>
+          <h2 id="plcPanelTitle">PLC 数据</h2>
+          <button id="plcClose" class="panel-close" type="button" aria-label="关闭 PLC 实时数据"><svg class="icon"><use href="#i-close"/></svg></button>
+        </header>
+
+        <div class="panel-content">
+          <div class="plc-summary">
+            <div class="plc-connection" tabindex="0" aria-label="PLC连接统计，悬停查看设备"><span class="summary-dot"></span><strong id="connectedCount">2 台 PLC 已连接</strong><span id="parameterCount">12 个参数已汇总</span><div class="device-chips" id="deviceChips"></div></div>
+          </div>
+          <div id="plcMetricSections"></div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="management-view" id="managementView" aria-hidden="true">
+      <header class="workspace-header">
+        <button class="back-button" id="closeManagement" type="button">←</button>
+        <div><h1>PLC 管理</h1><p>统一管理 PLC 设备接入、设备模板、标准字段与预警规则</p></div>
+      </header>
+      <div class="workspace-shell">
+        <nav class="workspace-nav" aria-label="PLC 管理二级菜单">
+          <div class="nav-caption">PLC 管理</div>
+          <button class="workspace-nav-item active" data-management-tab="devices" type="button"><span>▣</span>PLC 设备管理</button>
+          <button class="workspace-nav-item" data-management-tab="templates" type="button"><span>▦</span>PLC 设备模板</button>
+          <button class="workspace-nav-item" data-management-tab="fields" type="button"><span>≡</span>标准字段库</button>
+          <button class="workspace-nav-item" data-management-tab="alerts" type="button"><span>!</span>PLC 预警配置 <span class="repeat-note" tabindex="0">ⓘ<span class="repeat-bubble">重复预警规则（仅原型备注）：同一设备、同一标准字段的一次未处理异常归为一个事件，不重复创建；只触发最高等级，保留等级升级时间及前后等级。预警记录与处理流程后续设计。</span></span></button>
+        </nav>
+        <div class="workspace-main">
+          <section class="management-tab active" id="devicesTab">
+            <div class="content-heading">
+              <div><h2>PLC 设备管理</h2><p>按设备维护 PLC 接入关系，并配置该设备唯一的数据卡片。</p></div>
+              <div class="heading-actions"><button class="secondary-action" id="cardLayoutButton" type="button">编辑数据卡片</button><button class="primary-action" id="addPlcButton" type="button">＋ 添加 PLC</button></div>
+            </div>
+            <div class="pump-context-bar">
+              <div class="context-caption"><strong>当前管理对象</strong><span>项目 / 厂房 / 机组 / 设备</span></div>
+              <label class="context-select"><span>项目</span><select id="projectSelect"></select></label><span class="context-separator">/</span>
+              <label class="context-select"><span>厂房</span><select id="plantSelect"></select></label><span class="context-separator">/</span>
+              <label class="context-select"><span>机组</span><select id="unitSelect"></select></label><span class="context-separator">/</span>
+              <label class="context-select"><span>设备</span><select id="pumpSelect"></select></label>
+              <button class="tree-trigger" id="openPumpTree" type="button">☷ 树形选择</button>
+              <div class="context-path" id="currentPumpSummary"></div>
+              <div class="pump-tree-popover" id="pumpTreePopover" aria-hidden="true">
+                <div class="tree-popover-head"><strong>选择设备</strong><button id="closePumpTree" type="button" aria-label="关闭">×</button></div>
+                <input class="tree-search" id="pumpTreeSearch" type="search" placeholder="搜索项目、厂房、机组或设备">
+                <div class="pump-tree" id="pumpTreeContent"></div>
+              </div>
+            </div>
+            <div class="filter-bar"><input id="deviceSearch" type="search" placeholder="搜索设备名称或 IP"><select id="deviceStatusFilter"><option value="all">全部状态</option><option value="online">已连接</option><option value="offline">未连接</option></select><span class="table-count" id="deviceCount"></span></div>
+            <div class="data-table-wrap device-table-wrap"><table class="data-table device-table"><thead><tr><th>设备名称</th><th>协议</th><th>IP／端口</th><th>点位数量</th><th>卡片参数</th><th>启用状态</th><th>连接状态</th><th>操作</th></tr></thead><tbody id="plcDeviceTableBody"></tbody></table></div>
+          </section>
+          <section class="management-tab" id="templatesTab">
+            <div class="content-heading">
+              <div><h2>PLC 设备模板</h2><p>维护设备信息、协议配置、采集组及点位字段。</p></div>
+              <button class="primary-action" id="addTemplateButton" type="button">＋ 新增模板</button>
+            </div>
+            <div class="filter-bar"><input id="templateSearch" type="search" placeholder="搜索模板名称或协议"><select><option>全部协议</option><option>Modbus TCP</option><option>Modbus RTU</option><option>S7</option></select><span class="table-count" id="templateCount"></span></div>
+            <div class="data-table-wrap"><table class="data-table"><thead><tr><th>模板名称</th><th>协议</th><th>点位数量</th><th>最近更新</th><th>状态</th><th>操作</th></tr></thead><tbody id="templateTableBody"></tbody></table></div>
+          </section>
+          <section class="management-tab" id="fieldsTab">
+            <div class="content-heading">
+              <div><h2>标准字段库</h2><p>平台统一维护字段名称、编码与数据分类标识；分类标识不限制卡片中的展示分组。</p></div>
+              <button class="primary-action" id="addFieldButton" type="button">＋ 新增字段</button>
+            </div>
+            <div class="filter-bar"><input id="fieldSearch" type="search" placeholder="搜索字段名称或编码"><select><option>全部数据分类标识</option><option>设备状态</option><option>机组运行参数</option><option>变频器状态</option><option>能耗参数</option></select><span class="table-count" id="fieldCount"></span></div>
+            <div class="data-table-wrap"><table class="data-table"><thead><tr><th>字段名称</th><th>字段编码</th><th>数据分类标识</th><th>数据类型</th><th>标准单位</th><th>状态</th><th>操作</th></tr></thead><tbody id="fieldTableBody"></tbody></table></div>
+          </section>
+          <section class="management-tab" id="alertsTab">
+            <div class="content-heading">
+              <div><h2>PLC 预警配置</h2><p>平台默认与设备自定义规则；各等级颜色同步用于实时数据与趋势回溯。</p></div>
+              <span class="template-source-note">未配置字段不产生预警</span>
+            </div>
+            <div class="warning-scope-bar">
+              <div class="scope-switch" id="warningScopeSwitch" role="tablist" aria-label="预警配置范围"><button class="active" data-warning-scope="default" role="tab" aria-selected="true" type="button">平台默认规则</button><button data-warning-scope="pump" role="tab" aria-selected="false" type="button">自定义规则</button></div>
+              <div class="warning-pump-context disabled" id="warningPumpContext" hidden>
+                <select id="alertProjectSelect" aria-label="选择项目"></select><span>/</span><select id="alertPlantSelect" aria-label="选择厂房"></select><span>/</span><select id="alertUnitSelect" aria-label="选择机组"></select><span>/</span><select id="alertPumpSelect" aria-label="选择设备"></select>
+              </div>
+              <div class="scope-rule-note" id="warningScopeNote"><strong>正在维护平台默认规则</strong>数值字段未配置自定义规则时沿用默认；布尔异常值仅在设备中配置。</div>
+            </div>
+            <div class="warning-stat-strip"><div class="warning-stat"><span>标准字段</span><strong id="warningFieldTotal">0</strong></div><div class="warning-stat"><span>已配置规则</span><strong id="warningConfiguredTotal">0</strong></div><div class="warning-stat"><span>未配置字段</span><strong id="warningUnconfiguredTotal">0</strong></div></div>
+            <div class="filter-bar"><input id="warningFieldSearch" type="search" placeholder="搜索字段名称或编码"><select id="warningTypeFilter"><option value="all">全部数据类型</option><option value="number">数值型</option><option value="boolean">布尔型</option></select><select id="warningStatusFilter"><option value="all">全部配置状态</option><option value="unconfigured">未配置</option><option value="enabled">已启用</option><option value="disabled">已停用</option></select><span class="table-count" id="warningRuleCount"></span></div>
+            <div class="data-table-wrap"><table class="data-table"><thead><tr><th>标准字段</th><th>数据类型／单位</th><th>数据分类标识</th><th>预警条件</th><th>状态</th><th>操作</th></tr></thead><tbody id="warningRuleTableBody"></tbody></table></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal-layer" id="templateModal" aria-hidden="true">
+      <section class="modal-card modal-xl" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
+        <header class="modal-header"><div><h2 id="templateModalTitle">编辑 PLC 设备模板</h2><p>模板修改用于后续新增设备，已接入设备的配置保持独立。</p></div><button class="modal-close" data-close-modal="templateModal" type="button">×</button></header>
+        <div class="modal-body scroll-body">
+          <div class="form-section"><h3>设备信息</h3><div class="form-grid four-col"><label><span>模板名称 <em>*</em></span><input id="templateNameInput" placeholder="填写模板名称"></label><label><span>协议 <em>*</em></span><select id="templateProtocolInput"><option value="">请选择协议</option><option>S7</option><option>Modbus TCP</option><option>Modbus RTU</option></select></label><label><span>默认 IP 地址</span><input id="templateIpInput"></label><label><span>默认端口</span><input id="templatePortInput" type="number" min="1" max="65535"></label><label><span>模板状态</span><select id="templateEnabledInput"><option value="enabled">启用</option><option value="disabled">停用</option></select></label><label class="template-description"><span>模板说明</span><input id="templateDescriptionInput" placeholder="填写用途或配置说明"></label></div></div>
+          <details id="templateProtocolDetails" class="form-section protocol-config-section protocol-collapse"><summary><strong>动态字段配置</strong><span id="templateProtocolMeta">选择协议后配置</span><span class="protocol-collapse-action"></span></summary><div class="protocol-collapse-content"><p class="rule-section-note">随协议展示对应配置项，支持单选、下拉和输入；本版字段为示例，实际以协议配置为准。</p><div id="templateProtocolFields" class="protocol-fields"><div class="empty-config">请选择协议后配置参数</div></div></div></details>
+          <div class="form-section"><div class="section-heading-row"><div><div class="point-section-title"><h3>组与点位信息</h3><button type="button" class="point-help-trigger" data-point-help aria-label="查看点位字段校验说明" aria-describedby="pointValidationHelp">?</button></div><p>组名、采集频率和全部点位字段均可编辑。</p></div><div class="heading-actions"><button id="addTemplateGroup" class="secondary-action" type="button">＋ 新增组</button><button id="addTemplatePoint" class="secondary-action" type="button">＋ 新增点位</button></div></div><div class="template-group-bar" id="templateGroupTabs" role="tablist" aria-label="点位分组"></div><div class="group-config-summary"><span id="templateGroupMeta"></span><button id="editTemplateGroup" class="secondary-action" type="button">编辑当前组</button></div><div class="point-table-wrap"><table class="point-table editable-template-table"><thead><tr><th>组</th><th>点位标识</th><th>点位名称</th><th>数据类型</th><th>点位地址</th><th>精度</th><th>系数</th><th>偏移量</th><th>单位</th><th>标准字段</th><th>说明</th><th>操作</th></tr></thead><tbody id="templatePointBody"></tbody></table></div></div><div class="form-error" id="templateFormError" role="alert"></div>
+        </div>
+        <footer class="modal-footer"><button class="secondary-action" data-close-modal="templateModal" type="button">取消</button><button class="primary-action" id="saveTemplateButton" type="button">保存模板</button></footer>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="pointGroupModal" aria-hidden="true"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pointGroupTitle"><header class="modal-header"><div><h2 id="pointGroupTitle">新增采集组</h2><p>同组点位采用相同的采集间隔。</p></div><button class="modal-close" data-close-modal="pointGroupModal" type="button">×</button></header><div class="modal-body"><div class="form-grid"><label><span>组名 <em>*</em></span><input id="pointGroupName" placeholder="填写组名"></label><label><span>采集间隔（ms）<em>*</em></span><input id="pointGroupInterval" type="number" min="1" step="1" value="1000"></label></div><div class="form-error" id="pointGroupError" role="alert"></div></div><footer class="modal-footer"><button class="secondary-action" data-close-modal="pointGroupModal" type="button">取消</button><button class="primary-action" id="savePointGroup" type="button">保存组</button></footer></section></div>
+    <div class="modal-layer" id="addDeviceModal" aria-hidden="true">
+      <section class="modal-card modal-xl" role="dialog" aria-modal="true" aria-labelledby="addDeviceTitle">
+        <header class="modal-header"><div><h2 id="addDeviceTitle">添加 PLC 设备</h2><p>选择模板，按现场情况调整设备与点位信息，然后连接中转平台。</p></div><button class="modal-close" data-close-modal="addDeviceModal" type="button">×</button></header>
+        <div class="wizard-steps"><div class="wizard-step active" data-step-indicator="1"><b>1</b><span>选择模板</span></div><i></i><div class="wizard-step" data-step-indicator="2"><b>2</b><span>设备与点位</span></div><i></i><div class="wizard-step" data-step-indicator="3"><b>3</b><span>连接设备</span></div></div>
+        <div class="wizard-context">绑定对象：<strong id="deviceBindingContext"></strong><span>添加完成后仅归属于当前泵机</span></div>
+        <div class="modal-body wizard-body">
+          <section class="wizard-page active" data-wizard-page="1"><div class="template-choice-grid" id="templateChoiceGrid"></div></section>
+          <section class="wizard-page" data-wizard-page="2"><div class="form-section compact-section"><h3>设备信息</h3><div class="form-grid four-col"><label><span>设备名称 <em>*</em></span><input id="deviceNameInput" value="主控 PLC-03"></label><label><span>协议</span><input id="deviceProtocolInput" disabled></label><label><span>设备 IP 地址 <em>*</em></span><input id="deviceIpInput"></label><label><span>端口号 <em>*</em></span><input id="devicePortInput"></label></div></div><details id="deviceProtocolDetails" class="form-section protocol-config-section protocol-collapse"><summary><strong>动态字段配置</strong><span id="deviceProtocolMeta"></span><span class="protocol-collapse-action"></span></summary><div class="protocol-collapse-content"><p class="rule-section-note">从所选模板带入，可按现场情况调整；当前修改仅作用于本台设备。</p><div id="deviceProtocolFields" class="protocol-fields"></div></div></details><div class="section-heading-row slim"><div><div class="point-section-title"><h3>组与点位调整</h3><button type="button" class="point-help-trigger" data-point-help aria-label="查看点位字段校验说明" aria-describedby="pointValidationHelp">?</button></div><p>当前修改仅作用于本台设备；待删除点位置灰，保存前可恢复。</p></div><div class="heading-actions"><span class="soft-tag" id="selectedTemplateName"></span><button class="secondary-action" id="addDeviceGroup" type="button">＋ 新增组</button><button class="secondary-action" id="addDevicePoint" type="button">＋ 新增点位</button></div></div><div class="template-group-bar" id="deviceGroupTabs" role="tablist" aria-label="设备点位分组"></div><div class="group-config-summary"><span id="deviceGroupMeta"></span><button id="editDeviceGroup" class="secondary-action" type="button">编辑当前组</button></div><div class="point-table-wrap device-points"><table class="point-table"><thead><tr><th>点位标识</th><th>点位名称</th><th>标准字段</th><th>数据类型</th><th>地址</th><th>精度</th><th>系数</th><th>偏移量</th><th>单位</th><th>操作</th></tr></thead><tbody id="devicePointBody"></tbody></table></div></section>
+          <section class="wizard-page connection-page" data-wizard-page="3"><div class="prototype-state-switch"><span>原型状态展示</span><button type="button" data-connection-demo="loading">连接中展示</button><button type="button" data-connection-demo="success">连接成功展示</button><button type="button" data-connection-demo="failure">连接失败展示</button></div><div class="connection-visual" id="connectionVisual"></div></section>
+        </div>
+        <footer class="modal-footer wizard-footer"><button class="secondary-action" id="wizardPrevious" type="button">取消</button><span></span><button class="primary-action" id="wizardNext" type="button">下一步</button></footer>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="fieldModal" aria-hidden="true">
+      <section class="modal-card modal-md" role="dialog" aria-modal="true" aria-labelledby="fieldModalTitle">
+        <header class="modal-header"><div><h2 id="fieldModalTitle">新增标准字段</h2><p id="fieldModalDescription">维护平台统一使用的标准字段信息。</p></div><button class="modal-close" data-close-modal="fieldModal" type="button">×</button></header>
+        <div class="modal-body scroll-body">
+          <div class="field-form-grid">
+            <label><span>字段名称 <em>*</em></span><input id="fieldNameInput" maxlength="30" placeholder="例如：轴承温度"></label>
+            <label><span>字段编码 <em>*</em></span><input id="fieldCodeInput" maxlength="50" placeholder="例如：bearing_temperature"><small id="fieldCodeHint">创建后不可修改，用于模板和点位引用。</small></label>
+            <label><span>数据分类标识 <em>*</em></span><input id="fieldCategoryInput" list="fieldCategoryOptions" maxlength="30" placeholder="可选择或输入新分类"><datalist id="fieldCategoryOptions"></datalist></label>
+            <label><span>数据类型 <em>*</em></span><select id="fieldTypeInput"><option value="FLOAT32">FLOAT32</option><option value="INT16">INT16</option><option value="UINT16">UINT16</option><option value="BOOLEAN">BOOLEAN</option><option value="STRING">STRING</option></select></label>
+            <label><span>标准单位</span><input id="fieldUnitInput" maxlength="12" placeholder="无单位可填写 -"></label>
+            <label><span>状态</span><select id="fieldStatusInput"><option value="enabled">启用</option><option value="disabled">停用</option></select></label>
+          </div>
+          <div class="form-error" id="fieldFormError" role="alert"></div>
+        </div>
+        <footer class="modal-footer"><button class="secondary-action" data-close-modal="fieldModal" type="button">取消</button><button class="primary-action" id="saveFieldButton" type="button">保存字段</button></footer>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="warningRuleModal" aria-hidden="true">
+      <section class="modal-card modal-xl" role="dialog" aria-modal="true" aria-labelledby="warningRuleModalTitle">
+        <header class="modal-header"><div><h2 id="warningRuleModalTitle">配置预警规则</h2><p>每个等级最多配置一次；同时满足多个等级时，只触发最高等级。</p></div><button class="modal-close" data-close-modal="warningRuleModal" type="button">×</button></header>
+        <div class="modal-body scroll-body">
+          <div class="warning-field-summary"><div><strong id="warningRuleFieldName">—</strong><span id="warningRuleFieldMeta">—</span></div><div class="warning-scope-copy"><strong id="warningRuleScopeName">—</strong><span id="warningRuleScopePath">—</span></div></div>
+          <label class="inherit-rule-option hidden" id="inheritRuleOption"><input id="inheritDefaultRule" type="checkbox"><span><strong>使用平台默认规则</strong><small id="inheritRuleDescription">取消勾选后，为当前设备单独配置该字段规则。</small></span></label>
+          <div class="warning-rule-form" id="warningRuleForm">
+            <p class="rule-section-note" id="warningRuleHint">配置后仅在规则启用时参与实时预警判断。</p>
+            <label class="warning-condition-label" id="warningConditionGroup"><span>预警条件（所有等级共用）</span><select id="warningConditionInput"><option value="range">超出正常范围</option><option value="max">高于上限</option><option value="min">低于下限</option></select></label>
+            <div class="data-table-wrap"><table class="data-table level-table"><thead><tr><th>预警等级</th><th id="warningLowerTitle">下限 / 异常值</th><th>上限</th><th>颜色</th><th>操作</th></tr></thead><tbody id="warningLevelRows"></tbody></table></div>
+            <button class="secondary-action" id="addWarningLevel" type="button">＋ 新增等级</button>
+            <div class="rule-input-grid">
+              <label><span>规则状态</span><select id="warningEnabledInput"><option value="enabled">启用</option><option value="disabled">停用</option></select></label>
+            </div>
+          </div>
+          <div class="unsupported-rule hidden" id="unsupportedWarningRule">文本型字段暂不支持阈值预警，可保留字段并等待后续规则类型扩展。</div>
+          <div class="form-error" id="warningRuleFormError" role="alert"></div>
+        </div>
+        <footer class="modal-footer"><button class="secondary-action" data-close-modal="warningRuleModal" type="button">取消</button><button class="primary-action" id="saveWarningRule" type="button">保存规则</button></footer>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="deviceActionModal" aria-hidden="true">
+      <section class="modal-card modal-md" role="dialog" aria-modal="true" aria-labelledby="deviceActionTitle">
+        <header class="modal-header"><div><h2 id="deviceActionTitle">停用 PLC 设备</h2><p>请确认本次设备管理操作。</p></div><button class="modal-close" data-close-modal="deviceActionModal" type="button">×</button></header>
+        <div class="modal-body"><div class="action-confirm" id="deviceActionContent"></div></div>
+        <footer class="modal-footer"><button class="secondary-action" data-close-modal="deviceActionModal" type="button">取消</button><button class="danger-action" id="confirmDeviceAction" type="button">确认停用</button></footer>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="cardConfigModal" aria-hidden="true">
+      <section class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="cardConfigTitle">
+        <header class="modal-header"><div><h2 id="cardConfigTitle">PLC数据卡片编辑</h2><p>在最终展示效果上完成字段新增、排序、宽度、名称和显示方式调整。</p></div><button class="modal-close" data-close-modal="cardConfigModal" type="button">×</button></header>
+        <div class="config-toolbar">
+          <label>布局列数 <select id="layoutColumnsSelect"><option value="2">2 列</option><option value="3">3 列</option><option value="4" selected>4 列</option></select></label>
+          <div class="editor-history"><button id="editorUndo" type="button" title="撤销">↶</button><button id="editorRedo" type="button" title="重做">↷</button></div>
+          <button class="editor-add-field" id="addStandardFieldButton" type="button">＋ 新增标准字段</button>
+          <button class="editor-add-field" id="addCardGroupButton" type="button">＋ 新增分类</button>
+          <span>字段可在任意分类间移动；标准字段分类仅作数据标识</span><span class="editor-context" id="editorContextPath"></span>
+        </div>
+        <div class="visual-editor-stage">
+          <aside class="standard-field-picker" id="standardFieldPicker" aria-hidden="true">
+            <div class="field-picker-head"><div><strong>新增标准字段</strong><p>仅可加入当前泵机已绑定 PLC 点位的标准字段</p></div><button id="closeStandardFieldPicker" type="button" aria-label="关闭">×</button></div>
+            <input class="field-picker-search" id="standardFieldSearch" type="search" placeholder="搜索字段名称、编码或分类">
+            <div class="standard-field-list" id="standardFieldList"></div>
+          </aside>
+          <aside class="category-creator" id="categoryCreator" aria-hidden="true"><strong>新增卡片分类</strong><p>该分类仅用于当前泵机的数据卡片布局。</p><input id="newCategoryName" maxlength="20" placeholder="例如：重点监测参数"><div><button class="secondary-action" id="cancelCategoryCreate" type="button">取消</button><button class="primary-action" id="confirmCategoryCreate" type="button">添加分类</button></div></aside>
+          <div class="visual-editor-note"><b>i</b><span>点击参数块显示快捷工具，可切换显示方式、占用宽度或移出卡片。</span></div>
+          <div class="editable-plc-card"><div class="editable-card-head"><strong>PLC 数据</strong><span>● 实时更新</span></div><div class="visual-editor-canvas" id="visualEditorCanvas"></div></div>
+        </div>
+        <footer class="modal-footer"><button class="secondary-action" data-close-modal="cardConfigModal" type="button">退出，不保存</button><button class="primary-action" id="saveCardConfig" type="button">保存并应用</button></footer>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+
+  <div id="pointValidationHelp" class="rule-hover-bubble point-validation-bubble" role="tooltip" aria-hidden="true"><h4>点位字段校验说明</h4><p>校验范围：当前弹窗内的所有分组。</p><ol><li><strong>点位标识：</strong>须在当前弹窗内保持唯一，不允许重复。</li><li><strong>点位名称：</strong>仅用于用户识别与记录，不参与业务逻辑关联，允许重复。</li><li><strong>点位地址：</strong>须在当前弹窗内保持唯一，不允许重复。</li><li><strong>标准字段：</strong>同一标准字段在当前弹窗内仅可绑定一个点位，不允许重复选择。</li></ol></div>
+  <div id="warningRuleTooltip" class="rule-hover-bubble" role="tooltip" aria-hidden="true"></div>
+  
+  
+
+<script src="../shared/js/event-timeline.js"></script><script src="../shared/js/session.js"></script>
+<script src="../shared/js/hierarchy.js"></script>
+<script src="../shared/js/shell.js"></script>
+<script src="./data/demo-data.js"></script>
+<script src="./app.js"></script>
+<script src="./events.js"></script>
+<script src="./records-view.js"></script>
+<script src="./alerts-link.js"></script>
+<script src="./expanded-trends.js"></script>
+<script src="./point-help.js"></script>
+</body>
+</html>

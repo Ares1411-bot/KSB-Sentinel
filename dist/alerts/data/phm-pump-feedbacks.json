@@ -1,0 +1,281 @@
+{
+  "schemaNote": "建议的演示结构，并非现有算法接口约定；feedbackId 和提示项 key 均为示例编码。",
+  "reference": {
+    "source": "用户提供的故障预警截图",
+    "items": [
+      {
+        "name": "联轴器角度不对中",
+        "sourcePercent": 75.51
+      },
+      {
+        "name": "联轴器平行不对中",
+        "sourcePercent": 74.5
+      },
+      {
+        "name": "联轴器混合不对中",
+        "sourcePercent": 74.5
+      }
+    ],
+    "percentMeaning": "沿用来源百分比，含义尚未确认，不映射为置信度或严重等级。"
+  },
+  "constructedForDemo": [
+    "轴承正常",
+    "新增振动预警 A102",
+    "重复、部分恢复和全部恢复的反馈时序"
+  ],
+  "policy": {
+    "groupBy": "PHM + pumpId + 未结束的整泵事件",
+    "eventCountBeforeHandling": 1,
+    "notificationCountInThisExample": 1,
+    "missingItem": "未返回不等于恢复，仅依据明确的 normal 状态更新",
+    "manualClose": "全部数据恢复后仍待提交处理结果；处理后再次异常建立新事件"
+  },
+  "feedbacks": [
+    {
+      "feedbackId": "PHM-DEMO-F1",
+      "pumpId": "pump-omega-1",
+      "analysisTime": 1792022400000,
+      "fullSnapshot": true,
+      "items": [
+        {
+          "key": "coupling:angular",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "角度不对中",
+          "status": "abnormal",
+          "sourcePercent": 75.51,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:parallel",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "平行不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:combined",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "混合不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "bearing:health",
+          "module": "潜在故障",
+          "component": "轴承",
+          "name": "轴承状态",
+          "status": "normal"
+        }
+      ]
+    },
+    {
+      "feedbackId": "PHM-DEMO-F2",
+      "pumpId": "pump-omega-1",
+      "analysisTime": 1792023300000,
+      "fullSnapshot": true,
+      "items": [
+        {
+          "key": "coupling:angular",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "角度不对中",
+          "status": "abnormal",
+          "sourcePercent": 75.51,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:parallel",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "平行不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:combined",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "混合不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "bearing:health",
+          "module": "潜在故障",
+          "component": "轴承",
+          "name": "轴承状态",
+          "status": "normal"
+        }
+      ]
+    },
+    {
+      "feedbackId": "PHM-DEMO-F3",
+      "pumpId": "pump-omega-1",
+      "analysisTime": 1792024200000,
+      "fullSnapshot": true,
+      "items": [
+        {
+          "key": "coupling:angular",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "角度不对中",
+          "status": "abnormal",
+          "sourcePercent": 75.51,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:parallel",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "平行不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:combined",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "混合不对中",
+          "status": "abnormal",
+          "sourcePercent": 74.5,
+          "view": "fault"
+        },
+        {
+          "key": "bearing:health",
+          "module": "潜在故障",
+          "component": "轴承",
+          "name": "轴承状态",
+          "status": "normal"
+        },
+        {
+          "key": "vibration:drive-horizontal:A102",
+          "module": "振动特征值",
+          "component": "泵驱动端 · 水平",
+          "name": "振动速度峰峰值高",
+          "status": "abnormal",
+          "warningCode": "A102",
+          "view": "vibration"
+        }
+      ]
+    },
+    {
+      "feedbackId": "PHM-DEMO-F4",
+      "pumpId": "pump-omega-1",
+      "analysisTime": 1792025100000,
+      "fullSnapshot": true,
+      "items": [
+        {
+          "key": "coupling:angular",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "角度不对中",
+          "status": "abnormal",
+          "sourcePercent": 75.51,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:parallel",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "平行不对中",
+          "status": "normal",
+          "sourcePercent": null,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:combined",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "混合不对中",
+          "status": "normal",
+          "sourcePercent": null,
+          "view": "fault"
+        },
+        {
+          "key": "bearing:health",
+          "module": "潜在故障",
+          "component": "轴承",
+          "name": "轴承状态",
+          "status": "normal"
+        },
+        {
+          "key": "vibration:drive-horizontal:A102",
+          "module": "振动特征值",
+          "component": "泵驱动端 · 水平",
+          "name": "振动速度峰峰值高",
+          "status": "abnormal",
+          "warningCode": "A102",
+          "view": "vibration"
+        }
+      ]
+    },
+    {
+      "feedbackId": "PHM-DEMO-F5",
+      "pumpId": "pump-omega-1",
+      "analysisTime": 1792026000000,
+      "fullSnapshot": true,
+      "items": [
+        {
+          "key": "coupling:angular",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "角度不对中",
+          "status": "normal",
+          "sourcePercent": null,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:parallel",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "平行不对中",
+          "status": "normal",
+          "sourcePercent": null,
+          "view": "fault"
+        },
+        {
+          "key": "coupling:combined",
+          "module": "潜在故障",
+          "component": "联轴器",
+          "name": "混合不对中",
+          "status": "normal",
+          "sourcePercent": null,
+          "view": "fault"
+        },
+        {
+          "key": "bearing:health",
+          "module": "潜在故障",
+          "component": "轴承",
+          "name": "轴承状态",
+          "status": "normal",
+          "sourcePercent": null
+        },
+        {
+          "key": "vibration:drive-horizontal:A102",
+          "module": "振动特征值",
+          "component": "泵驱动端 · 水平",
+          "name": "振动速度峰峰值高",
+          "status": "normal",
+          "warningCode": "A102",
+          "view": "vibration",
+          "sourcePercent": null
+        }
+      ]
+    }
+  ],
+  "expectedSteps": [
+    "三项联轴器提示，建立1条泵级事件",
+    "重复反馈，事件仍为1条",
+    "新增振动提示，同一事件中累计4项提示",
+    "两项联轴器提示恢复，2项仍异常",
+    "全部恢复，人工处理状态仍为待处理"
+  ]
+}

@@ -1,0 +1,13 @@
+[
+  "00-state-and-trends.js",
+  "10-navigation.js",
+  "20-field-list.js",
+  "30-warning-editor.js",
+  "40-device-management.js",
+  "50-template-editor.js",
+  "60-standard-fields.js",
+  "70-warning-save.js",
+  "80-add-device.js",
+  "90-card-editor.js",
+  "99-bootstrap.js"
+]
